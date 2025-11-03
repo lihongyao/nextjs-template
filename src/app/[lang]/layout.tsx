@@ -4,7 +4,6 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 import type { Metadata } from "next";
-import Head from "next/head";
 import SWRegister from "@/components/ui/SWRegister";
 
 type Props = {

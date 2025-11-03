@@ -1,6 +1,6 @@
 // -- 客户端环境变量
 interface ClientEnv {
-  NEXT_PUBLIC_HOST: string;
+  NEXT_PUBLIC_API_BASE_URL: string;
   NEXT_PUBLIC_VERSION: string;
 }
 
