@@ -3,9 +3,21 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
+import type { Metadata } from "next";
+import Head from "next/head";
+import SWRegister from "@/components/ui/SWRegister";
+
 type Props = {
   children: React.ReactNode;
   params: Promise<{ lang: string }>;
+};
+
+export const metadata: Metadata = {
+  title: "Next.js 学习指南",
+  description: "The React Framework for the Web",
+  authors: [{ name: "Leo" }, { name: "Josh", url: "https://nextjs.org" }],
+  creator: "Leo",
+  manifest: "/manifest.webmanifest",
 };
 
 export function generateStaticParams() {
@@ -33,6 +45,7 @@ export default async function LocaleLayout({ children, params }: Props) {
         <NextIntlClientProvider locale={lang} messages={messages}>
           {children}
         </NextIntlClientProvider>
+        <SWRegister />
       </body>
     </html>
   );

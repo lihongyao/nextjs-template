@@ -6,6 +6,8 @@
     "dev": "cross-env NODE_ENV=development APP_ENV=dev next dev",
     "dev:qa": "cross-env NODE_ENV=development APP_ENV=qa next dev",
     "dev:prod": "cross-env NODE_ENV=development APP_ENV=prod next dev",
+    "start:qa": "cross-env NODE_ENV=production APP_ENV=qa next start",
+    "start:prod": "cross-env NODE_ENV=production APP_ENV=prod next start",
     "build:qa": "cross-env NODE_ENV=production APP_ENV=qa next build",
     "build:prod": "cross-env NODE_ENV=production APP_ENV=prod next build",
     "lint": "biome check .",
