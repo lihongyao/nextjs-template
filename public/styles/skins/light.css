@@ -1,0 +1,7 @@
+/* public/styles/skins/light.css */
+[data-skin="light"] {
+  --card-bg: #ffffff;
+  --card-text: #333;
+  --card-border-color: var(--colors-purple-100);
+  --header-border-color: var(--colors-purple-40);
+}

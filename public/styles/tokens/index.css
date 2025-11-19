@@ -1,0 +1,34 @@
+/* public/styles/tokens/index.css */
+:root {
+  --radius-none: 0px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+
+  --gap-xs: 4px;
+  --gap-sm: 8px;
+  --gap-md: 16px;
+  --gap-lg: 24px;
+
+  --colors-purple-100: #960ce1ff;
+  --colors-purple-90: #ad29ffff;
+  --colors-purple-80: #a820f2ff;
+  --colors-purple-70: #b200ffff;
+  --colors-purple-60: #b640ffff;
+  --colors-purple-40: #8a1dffff;
+  --colors-purple-30: #9837ffff;
+  --colors-purple-20: #b36cffff;
+
+  --colors-orange-100: #e55000ff;
+  --colors-orange-90: #ff5900ff;
+  --colors-orange-80: #ff6600ff;
+  --colors-orange-70: #ff7a15ff;
+  --colors-orange-60: #ff8622ff;
+  --colors-orange-40: #f59b23ff;
+  --colors-orange-30: #ffb73cff;
+}

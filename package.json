@@ -2,26 +2,64 @@
   "name": "nextjs-template",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "dotenv -e env/.env.${app-afun}.dev -- next dev --turbopack",
+    "build": "dotenv -e env/.env.$app.$env -- next build --turbopack",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "prepare": "husky",
+    "commit": "cz",
+    "i18n:json": "tsx scripts/excel2json/index.ts",
+    "convert:theme": "tsx scripts/convert-css-vars/index.js",
+    "convert:theme-tw": "tsx scripts/convert-css-vars/index.js --tw",
+    "build-theme:afun": "tsx scripts/build-styles/index.ts --brandName=afun",
+    "build-theme:bfun": "tsx scripts/build-styles/index.ts --brandName=bfun"
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "pnpm lint"
+    ]
   },
   "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "immer": "^10.2.0",
+    "js-cookie": "^3.0.5",
+    "next": "16.0.1",
+    "next-intl": "^4.5.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "next": "16.0.1"
+    "tailwind-merge": "^3.4.0",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
-    "babel-plugin-react-compiler": "1.0.0",
-    "typescript": "^5",
+    "@biomejs/biome": "2.2.0",
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@tailwindcss/postcss": "^4",
+    "@types/js-cookie": "^3.0.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@tailwindcss/postcss": "^4",
+    "babel-plugin-react-compiler": "1.0.0",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "dotenv": "^17.2.3",
+    "dotenv-cli": "^11.0.0",
+    "fs": "0.0.1-security",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "path": "^0.12.7",
+    "prettier": "^3.6.2",
+    "prettier-plugin-tailwindcss": "^0.7.1",
     "tailwindcss": "^4",
-    "@biomejs/biome": "2.2.0"
+    "tsx": "^4.20.6",
+    "typescript": "^5",
+    "xlsx": "^0.18.5"
   }
 }

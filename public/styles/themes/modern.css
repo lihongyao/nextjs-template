@@ -1,0 +1,5 @@
+/* public/styles/themes/modern.css */
+[data-theme="modern"] {
+  --card-radius: var(--radius-lg);
+  --card-padding: var(--gap-lg);
+}

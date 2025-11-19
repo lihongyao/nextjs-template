@@ -1,0 +1,7 @@
+/* public/styles/skins/dark.css */
+[data-skin="dark"] {
+  --card-bg: #1e293b;
+  --card-text: #cbd5e1;
+  --card-border-color: var(--colors-orange-100);
+  --header-border-color: var(--colors-orange-40);
+}
