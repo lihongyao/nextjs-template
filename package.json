@@ -13,8 +13,7 @@
     "i18n:json": "tsx scripts/excel2json/index.ts",
     "convert:theme": "tsx scripts/convert-css-vars/index.js",
     "convert:theme-tw": "tsx scripts/convert-css-vars/index.js --tw",
-    "build-theme:afun": "tsx scripts/build-styles/index.ts --brandName=afun",
-    "build-theme:bfun": "tsx scripts/build-styles/index.ts --brandName=bfun"
+    "gen-figma-variables": "tsx scripts/gen-figma-variables/index.ts"
   },
   "config": {
     "commitizen": {
