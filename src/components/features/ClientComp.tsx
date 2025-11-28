@@ -1,10 +1,10 @@
 // src/components/features/ClientComp.tsx
 "use client";
 import { useTranslations } from "next-intl";
-
 export default function ClientComp() {
   const t = useTranslations();
   const point = 6000;
+
   return (
     <div className="w-full flex flex-col items-center gap-4">
       <div>客户端组件</div>

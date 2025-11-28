@@ -1,9 +1,9 @@
 // src/components/features/LanguageSwitcher.tsx
 "use client";
 
+import clsx from "clsx";
 import { usePathname, useRouter } from "next/navigation";
 import { type Locale, routing } from "@/i18n/routing";
-import { clsx } from "@/libs/class-helpers";
 
 /**
  * LanguageSwitcher 组件

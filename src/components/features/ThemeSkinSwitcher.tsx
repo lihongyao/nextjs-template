@@ -1,8 +1,8 @@
 // src/components/features/ThemeSkinSwitcher.tsx
 "use client";
 
+import clsx from "clsx";
 import { useThemeActions } from "@/hooks/useThemeActions";
-import { clsx } from "@/libs/class-helpers";
 import { useBrandConfig } from "@/providers/brand.provider";
 
 export default function ThemeSkinSwitcher() {

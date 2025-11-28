@@ -5,7 +5,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { ThemeLayouts } from "@/components/layout";
 import { routing } from "@/i18n/routing";
-import { getBrandConfigSSR } from "@/libs/brand";
+import { getBrandConfigSSR } from "@/lib/brand";
 import { BrandConfigProvider } from "@/providers/brand.provider";
 
 type Props = {

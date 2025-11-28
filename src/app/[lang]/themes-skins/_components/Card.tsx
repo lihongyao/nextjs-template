@@ -1,8 +1,8 @@
 // src/app/[lang]/_components/Card.tsx
 
 import Image from "next/image";
-import { getBrandConfigSSR } from "@/libs/brand";
-import { getImgUrl } from "@/libs/utils";
+import { getBrandConfigSSR } from "@/lib/brand";
+import { getImgUrl } from "@/lib/helper";
 import ClientInfo from "./ClientInfo";
 import ServerInfo from "./ServerInfo";
 

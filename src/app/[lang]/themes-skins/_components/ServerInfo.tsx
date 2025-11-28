@@ -1,6 +1,6 @@
 // src/app/[lang]/_components/ServerInfo.tsx
 
-import { getBrandConfigSSR } from "@/libs/brand";
+import { getBrandConfigSSR } from "@/lib/brand";
 
 export default async function ServerInfo() {
   const brand = await getBrandConfigSSR();
