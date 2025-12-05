@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { getBrandConfigSSR } from "@/lib/brand";
-import { getImgUrl } from "@/lib/helper";
+import { getImgUrl } from "@/lib/helpers";
 import ClientInfo from "./ClientInfo";
 import ServerInfo from "./ServerInfo";
 

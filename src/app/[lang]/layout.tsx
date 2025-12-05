@@ -7,6 +7,7 @@ import { ThemeLayouts } from "@/components/layout";
 import { routing } from "@/i18n/routing";
 import { getBrandConfigSSR } from "@/lib/brand";
 import { BrandConfigProvider } from "@/providers/brand.provider";
+import { DialogProvider } from "@/providers/dialog.provider";
 
 type Props = {
   children: React.ReactNode;
@@ -44,7 +45,9 @@ export default async function RootLayout({ children, params }: Props) {
       <body>
         <NextIntlClientProvider locale={lang} messages={messages}>
           <BrandConfigProvider value={brand}>
-            <Layout>{children}</Layout>
+            <Layout>
+              <DialogProvider>{children}</DialogProvider>
+            </Layout>
           </BrandConfigProvider>
         </NextIntlClientProvider>
       </body>
