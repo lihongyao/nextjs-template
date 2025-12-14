@@ -23,7 +23,7 @@ export default async function DynamicCompsPage() {
   const configModules = await Promise.all(
     comps.map(async (c) => {
       try {
-        const mod = await import(`../../../components/widgets/${c.type}/index.ts`);
+        const mod = await import(`../../../../components/widgets/${c.type}/index.ts`);
         return mod.default;
       } catch (error) {
         console.log(error);

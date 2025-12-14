@@ -4,12 +4,21 @@
  */
 
 import { defineRouting } from "next-intl/routing";
+import type { BrandConfig } from "@/configs/brands/types";
+
+const module = await import(`@/configs/brands/${process.env.NEXT_PUBLIC_BRAND_NAME}.ts`);
+const config = module.default as BrandConfig;
 
 // -- 定义支持的语言环境和默认语言环境
-export const locales = ["zh-CN", "en-US", "pt", "es"] as const;
-export type Locale = (typeof locales)[number];
-
+const locales = config.locales.map((locale) => locale.code);
 export const defaultLocale = "zh-CN";
+export const langMap = config.locales.reduce(
+  (map, locale) => {
+    map[locale.code] = locale.value;
+    return map;
+  },
+  {} as Record<string, number>,
+);
 
 // -- 定义路由配置
 export const routing = defineRouting({

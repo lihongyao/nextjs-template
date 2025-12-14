@@ -1,4 +1,5 @@
-import Infos from "./_components/Infos";
+"use client";
+import Infos from "./components/Infos";
 
 export default function Page() {
   return (

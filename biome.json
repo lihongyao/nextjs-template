@@ -26,7 +26,8 @@
       "recommended": true,
       "suspicious": {
         "noUnknownAtRules": "off",
-        "noExplicitAny": "warn"
+        "noExplicitAny": "warn",
+        "noDocumentCookie": "off"
       },
       "style": {
         "noNonNullAssertion": "off"

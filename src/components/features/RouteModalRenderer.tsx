@@ -1,11 +1,9 @@
 // src/components/features/RouteModalRenderer.tsx
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useCallback, useMemo } from "react";
-import { ModalComponents } from "@/app/[lang]/(modals)";
-import { usePathname, useRouter } from "@/i18n/navigation";
-import { defaultLocale } from "@/i18n/routing";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback } from "react";
+import { ModalComponents } from "@/app/[locale]/(modals)";
 import { cn } from "@/lib/class-helpers";
 
 export type ModalComponentProps = {
@@ -15,43 +13,36 @@ export type ModalComponentProps = {
 export default function RouteModalRenderer() {
   const router = useRouter();
   const pathname = usePathname();
-  const pathSegments = pathname.split("/").filter(Boolean);
   const searchParams = useSearchParams();
-  const searchParamsString = searchParams.toString();
 
-  // 过滤出所有 modal-xxx
-  const modalKeys = useMemo(() => pathSegments.filter((s) => ModalComponents[s]), [pathSegments]);
-  const ModalComponent = useMemo(() => modalKeys.filter(Boolean).map((m) => ModalComponents[m]), [modalKeys]);
-  const C = ModalComponent[0];
+  // 从 pathname 和 query 双保险读取 modalKey
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const modalFromPath = pathSegments.find((s) => ModalComponents[s]);
+  const modalFromQuery = searchParams.get("modal");
+  const modalKey = modalFromPath || modalFromQuery;
+
+  const ModalComponent = modalKey ? ModalComponents[modalKey] : null;
 
   const onCloseAction = useCallback(() => {
-    if (ModalComponent.length <= 0) return;
+    if (!ModalComponent) return;
 
-    // 判断浏览器是否有可回退的历史记录（>2 表示有正常页面历史）
-    const canGoBack = window.history.length > 2;
-    if (canGoBack) {
+    // 优先尝试回退
+    if (window.history.state?.idx > 0) {
       router.back();
       return;
     }
 
-    // 手动从 URL 中移除 modal 参数，并更新路由
-    const params = new URLSearchParams(searchParamsString);
-    const nextQuery = params.toString();
+    // fallback: 移除 modal
+    const newPathSegments = pathSegments.filter((s) => !s.startsWith("modal-"));
+    const basePath = `/${newPathSegments.join("/")}`;
+    const nextUrl = searchParams.toString() ? `${basePath}?${searchParams.toString()}` : basePath;
 
-    // 移除最后一个 modal 段
-    const newPathSegments = [...pathSegments];
-    newPathSegments.pop();
-    const nextPath = "/" + newPathSegments.join("/");
-    const finalPath = nextPath || `/${defaultLocale}`;
-    const nextUrl = nextQuery ? `${finalPath}?${nextQuery}` : finalPath;
-
-    // 使用 replace 替换当前路由（不触发页面刷新，不滚动）
     router.replace(nextUrl, { scroll: false });
-  }, [ModalComponent, pathSegments, searchParamsString, router]);
+  }, [ModalComponent, router, pathSegments, searchParams]);
 
   return (
-    <div className={cn("w-screen h-screen fixed inset-0 bg-black/70 backdrop-blur-xs justify-center items-center ", ModalComponent.length > 0 ? "flex" : "hidden")}>
-      {C && <C onCloseAction={onCloseAction} />}
+    <div data-name="RouteModalRenderer" className={cn("w-screen h-screen fixed inset-0 justify-center items-center bg-black/70 backdrop-blur-xs", ModalComponent ? "flex" : "hidden")}>
+      {ModalComponent && <ModalComponent onCloseAction={onCloseAction} />}
     </div>
   );
 }

@@ -3,7 +3,8 @@
 
 import clsx from "clsx";
 import { usePathname, useRouter } from "next/navigation";
-import { type Locale, routing } from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
+import { useBrandConfig } from "@/providers/brand.provider";
 
 /**
  * LanguageSwitcher 组件
@@ -24,24 +25,17 @@ import { type Locale, routing } from "@/i18n/routing";
  * - 使用了 clsx 工具函数来处理 Tailwind 类名动态拼接
  */
 
-// 语言列表直接包含国旗
-const langs: { code: Locale; label: string }[] = [
-  { code: "zh-CN", label: "🇨🇳 Chinese" },
-  { code: "en-US", label: "🇺🇸 English" },
-  { code: "pt", label: "🇧🇷 Português" },
-  { code: "es", label: "🇪🇸 Español" },
-];
-
 export default function LanguageSwitcher() {
   const router = useRouter();
   const pathname = usePathname();
+  const brand = useBrandConfig();
 
   // 当前语言前缀
   const currentLang = routing.locales.find((locale) => pathname?.startsWith(`/${locale}`)) ?? routing.defaultLocale;
 
   // 切换语言
-  const onSwitchLang = (lang: { code: Locale; label: string }) => {
-    const segments = pathname.split("/").filter(Boolean) as Locale[];
+  const onSwitchLang = (lang: { code: string; label: string }) => {
+    const segments = pathname.split("/").filter(Boolean);
 
     // 如果 URL 首段是已知语言，直接替换；否则在前面添加
     if (routing.locales.includes(segments[0])) {
@@ -56,7 +50,7 @@ export default function LanguageSwitcher() {
 
   return (
     <div className="flex items-center gap-2">
-      {langs.map((lang) => {
+      {brand.locales.map((lang) => {
         const isActive = lang.code === currentLang;
 
         return (

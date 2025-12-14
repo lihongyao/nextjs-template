@@ -1,8 +1,9 @@
 import ClientComp from "@/components/features/ClientComp";
+import Counter from "@/components/features/Counter";
 import LanguageSwitcher from "@/components/features/LanguageSwitcher";
 import ServerComp from "@/components/features/ServerComp";
 import { Link } from "@/i18n/navigation";
-import Counter from "./_components/Counter";
+import { Routes } from "@/lib/routes";
 
 export default function Page() {
   return (
@@ -15,7 +16,7 @@ export default function Page() {
       </div>
       {/* 状态管理 */}
       <Counter />
-      <Link href="/details">Details</Link>
+      <Link href={Routes.Details}>Details</Link>
     </div>
   );
 }

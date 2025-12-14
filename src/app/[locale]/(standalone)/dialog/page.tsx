@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Button from "@/components/ui/Button";
 import { Dialog } from "@/components/ui/Dialog";
 import { useDialog } from "@/providers/dialog.provider";
 
@@ -50,13 +51,13 @@ export default function Demo() {
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <button onClick={() => setOpen(true)}>组件调用</button>
-      <button onClick={openX1}>Open X1</button>
-      <button onClick={openX2}>Open X2</button>
-      <button onClick={openX2AutoClose}>openX2AutoClose</button>
-      <button onClick={openQueue}>queue dialogs</button>
-      <button onClick={openStatic}>静态调用</button>
+    <div className="flex items-center gap-4 p-4">
+      <Button onClick={() => setOpen(true)}>组件调用</Button>
+      <Button onClick={openX1}>Open X1</Button>
+      <Button onClick={openX2}>Open X2</Button>
+      <Button onClick={openX2AutoClose}>openX2AutoClose</Button>
+      <Button onClick={openQueue}>queue dialogs</Button>
+      <Button onClick={openStatic}>静态调用</Button>
 
       <Dialog open={open} onClose={() => setOpen(false)} maskClosable={true}>
         <div className="p-10 bg-white rounded-md">

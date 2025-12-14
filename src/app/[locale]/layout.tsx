@@ -1,29 +1,25 @@
 // src/app/[lang]/layout.tsx
-import "@/app/globals.css";
+import "./globals.css";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { ThemeLayouts } from "@/components/layout";
+import RouteModalRenderer from "@/components/features/RouteModalRenderer";
 import { routing } from "@/i18n/routing";
 import { getBrandConfigSSR } from "@/lib/brand";
 import { BrandConfigProvider } from "@/providers/brand.provider";
 import { DialogProvider } from "@/providers/dialog.provider";
 
-type Props = {
-  children: React.ReactNode;
-  params: Promise<{ lang: string }>;
-};
+export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
+  // 获取当前语言
+  const { locale } = await params;
 
-export default async function RootLayout({ children, params }: Props) {
-  const { lang } = await params;
-
-  // Ensure that the incoming `locale` is valid
-  if (!hasLocale(routing.locales, lang)) {
-    notFound();
+  // 如果当前语言不在支持的语言列表中，则返回404
+  if (!hasLocale(routing.locales, locale)) {
+    return notFound();
   }
 
   // Enable static rendering
-  setRequestLocale(lang);
+  setRequestLocale(locale);
 
   // Providing all messages to the client
   // side is the easiest way to get started
@@ -31,10 +27,9 @@ export default async function RootLayout({ children, params }: Props) {
 
   // SSR 获取品牌配置 & 主题布局
   const brand = await getBrandConfigSSR();
-  const Layout = ThemeLayouts[brand.theme];
 
   return (
-    <html lang={lang} data-theme={brand.theme} data-skin={brand.skin}>
+    <html lang={locale} data-theme={brand.theme} data-skin={brand.skin} suppressHydrationWarning>
       <head>
         {/* SSR 加载主题、皮肤、覆盖文件 */}
         <link rel="stylesheet" href={`/styles/tokens/index.css`} />
@@ -43,11 +38,14 @@ export default async function RootLayout({ children, params }: Props) {
         {brand.overrides && <link rel="stylesheet" href={`/styles/overrides/${brand.brandName}.css`} />}
       </head>
       <body>
-        <NextIntlClientProvider locale={lang} messages={messages}>
+        <NextIntlClientProvider locale={locale} messages={messages}>
           <BrandConfigProvider value={brand}>
-            <Layout>
-              <DialogProvider>{children}</DialogProvider>
-            </Layout>
+            <DialogProvider>
+              {/* 页面内容 */}
+              {children}
+              {/* 路由弹框 */}
+              <RouteModalRenderer />
+            </DialogProvider>
           </BrandConfigProvider>
         </NextIntlClientProvider>
       </body>
