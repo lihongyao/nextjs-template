@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import RouteModalRenderer from "@/components/features/RouteModalRenderer";
+import ScrollManager from "@/components/features/ScrollManager";
 import { routing } from "@/i18n/routing";
 import { getBrandConfigSSR } from "@/lib/brand";
 import { BrandConfigProvider } from "@/providers/brand.provider";
@@ -45,6 +46,8 @@ export default async function LocaleLayout({ children, params }: { children: Rea
               {children}
               {/* 路由弹框 */}
               <RouteModalRenderer />
+              {/* 滚动管理 */}
+              <ScrollManager defaultScrollToTop />
             </DialogProvider>
           </BrandConfigProvider>
         </NextIntlClientProvider>

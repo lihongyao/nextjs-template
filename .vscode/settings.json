@@ -9,8 +9,13 @@
     "source.organizeImports.biome": "explicit"
   },
 
+  // 关闭 Tailwind CSS 语法检查
+  "tailwindCSS.lint.suggestCanonicalClasses": "ignore",
+
   // TSX 文件使用 Prettier（Tailwind 类名排序）
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+
+  "i18n-ally.localesPaths": ["src/i18n", "src/i18n/locales", "src/app/[locale]/(app)/i18n"]
 }
