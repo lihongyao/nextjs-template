@@ -3,6 +3,7 @@ import "./globals.css";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+
 import RouteModalRenderer from "@/components/features/RouteModalRenderer";
 import ScrollManager from "@/components/features/ScrollManager";
 import { routing } from "@/i18n/routing";

@@ -18,7 +18,7 @@ const GENERATED_DIR = path.resolve(STYLES_ROOT, "generated");
 const BRAND_CONFIG_DIR = path.resolve(ROOT_DIR, "src/configs/brands");
 
 // === 读取环境变量 ===
-const APP = process.env.app ?? "afunx_br";
+const APP = process.env.app ?? "afun";
 const ENV = process.env.env ?? "dev";
 
 if (!APP || !ENV) {
@@ -27,7 +27,7 @@ if (!APP || !ENV) {
 }
 
 // === 动态导入品牌配置 ===
-const brandConfigPath = path.resolve(BRAND_CONFIG_DIR, `${APP}.${ENV}.ts`);
+const brandConfigPath = path.resolve(BRAND_CONFIG_DIR, `${APP}.ts`);
 
 let brandConfig: BrandConfig;
 try {
