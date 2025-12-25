@@ -3,7 +3,7 @@ import Infos from "./components/Infos";
 
 export default function Page() {
   return (
-    <div>
+    <div className="w-full h-screen bg-pink-300">
       <Infos />
     </div>
   );

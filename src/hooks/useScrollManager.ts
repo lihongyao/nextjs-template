@@ -1,8 +1,9 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
-import { usePathname } from "@/i18n/navigation";
 
+// import { usePathname } from "@/i18n/navigation";
 type ScrollBehavior = "auto" | "smooth";
 
 export interface UseScrollManagerOptions {

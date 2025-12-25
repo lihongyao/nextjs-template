@@ -33,7 +33,9 @@
         "noNonNullAssertion": "off"
       },
       "correctness": {
-        "noUnusedVariables": "off"
+        "noUnusedVariables": "off",
+        "noUnknownProperty": "off",
+        "noUnknownTypeSelector": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"

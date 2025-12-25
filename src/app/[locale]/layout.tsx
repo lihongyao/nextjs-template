@@ -1,9 +1,11 @@
 // src/app/[lang]/layout.tsx
+import { ViewTransitions } from "next-view-transitions";
 import "./globals.css";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-
+import ClientInitializer from "@/components/features/ClientInitializer";
 import RouteModalRenderer from "@/components/features/RouteModalRenderer";
 import ScrollManager from "@/components/features/ScrollManager";
 import { routing } from "@/i18n/routing";
@@ -31,7 +33,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const brand = await getBrandConfigSSR();
 
   return (
-    <html lang={locale} data-theme={brand.theme} data-skin={brand.skin} suppressHydrationWarning>
+    <html lang={locale} data-theme={brand.theme} data-skin={brand.skin} suppressHydrationWarning className="bg-black">
       <head>
         {/* SSR 加载主题、皮肤、覆盖文件 */}
         <link rel="stylesheet" href={`/styles/tokens/index.css`} />
@@ -40,18 +42,21 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         {brand.overrides && <link rel="stylesheet" href={`/styles/overrides/${brand.brandName}.css`} />}
       </head>
       <body>
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <BrandConfigProvider value={brand}>
-            <DialogProvider>
-              {/* 页面内容 */}
-              {children}
-              {/* 路由弹框 */}
-              <RouteModalRenderer />
-              {/* 滚动管理 */}
-              <ScrollManager defaultScrollToTop />
-            </DialogProvider>
-          </BrandConfigProvider>
-        </NextIntlClientProvider>
+        <ViewTransitions>
+          <NextIntlClientProvider locale={locale} messages={messages}>
+            <BrandConfigProvider value={brand}>
+              <DialogProvider>
+                {/* 页面内容 */}
+                {children}
+                <ClientInitializer />
+                {/* 路由弹框 */}
+                <RouteModalRenderer />
+                {/* 滚动管理 */}
+                <ScrollManager defaultScrollToTop />
+              </DialogProvider>
+            </BrandConfigProvider>
+          </NextIntlClientProvider>
+        </ViewTransitions>
       </body>
     </html>
   );

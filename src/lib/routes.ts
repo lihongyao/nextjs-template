@@ -9,6 +9,8 @@ export const Routes = {
   Products: "/products",
   ThemeAndSkin: "/theme-and-skin",
   I18n: "/i18n",
+  Motion: "/motion",
+  MotionSub: "/motion/sub",
   ModalProfile: "/modal-profile",
 } as const;
 

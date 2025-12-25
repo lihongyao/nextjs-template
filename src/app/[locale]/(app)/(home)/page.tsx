@@ -1,11 +1,11 @@
 "use client";
 import { useEffect } from "react";
 import Button from "@/components/ui/Button";
-import { useRouter } from "@/i18n/navigation";
+import { useI18nRouter } from "@/hooks/useI18nRouter";
 import { Routes } from "@/lib/routes";
 
 export default function HomePage() {
-  const router = useRouter();
+  const router = useI18nRouter();
   useEffect(() => {
     console.log("Home Page Loaded");
   }, []);
@@ -16,6 +16,7 @@ export default function HomePage() {
       <Button onClick={() => router.push(Routes.DynamicComps)}>组件动态导入</Button>
       <Button onClick={() => router.push(Routes.ModalProfile)}>路由弹框</Button>
       <Button onClick={() => router.push(Routes.Dialog)}>普通弹框</Button>
+      <Button onClick={() => router.push(Routes.Motion)}>Motion</Button>
     </div>
   );
 }
