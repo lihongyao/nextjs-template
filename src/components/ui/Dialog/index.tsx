@@ -37,6 +37,8 @@ interface DialogProps {
   onClose?: () => void;
   /** 路由前进/后退时是否自动关闭 */
   closeOnPopstate?: boolean;
+  /** 内部使用，标记是否由 Provider 管理，避免重复监听 popstate */
+  _managedByProvider?: boolean;
 }
 
 // === 全局 Dialog 基础 ===
@@ -75,6 +77,7 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
     exitAnimation = "zoom-out",
     onClose,
     closeOnPopstate = true,
+    _managedByProvider = false,
   } = props;
 
   const [mounted, setMounted] = useState(false);
@@ -91,8 +94,10 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
     setIsExiting: () => setIsExiting(true),
   }));
 
+  // 初始化挂载
   useEffect(() => setMounted(true), []);
 
+  // 响应受控组件 open 状态变化
   useEffect(() => {
     if (!isControlled) return;
     if (open) {
@@ -103,6 +108,7 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
     }
   }, [open, isControlled, visible]);
 
+  // 自动销毁逻辑
   useEffect(() => {
     if (!autoDestroy || !visible) return;
 
@@ -116,8 +122,10 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
     };
   }, [autoDestroy, visible]);
 
+  // 点击遮罩关闭
   const handleMaskClick = () => maskClosable && setIsExiting(true);
 
+  // 动画结束处理
   const handleAnimationEnd = (e: React.AnimationEvent) => {
     // 只响应遮罩自身动画结束，避免子元素动画冒泡
     if (e.target !== e.currentTarget) return;
@@ -131,6 +139,7 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
     onClose?.();
   };
 
+  // 管理全局可见 Dialog 集合，锁滚动
   useEffect(() => {
     if (visible && !isExiting) {
       visibleDialogs.add(dialogId.current);
@@ -141,6 +150,17 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
       unlockBodyScroll();
     };
   }, [visible, isExiting]);
+
+  // ✅ 兼容单独使用 Dialog 时的 popstate
+  useEffect(() => {
+    // 如果关闭功能被禁用，或者由 Provider 管理，则跳过
+    if (!closeOnPopstate || _managedByProvider) return;
+
+    const handlePopstate = () => setIsExiting(true);
+    window.addEventListener("popstate", handlePopstate);
+
+    return () => window.removeEventListener("popstate", handlePopstate);
+  }, [closeOnPopstate, _managedByProvider]);
 
   if (!mounted || !visible) return null;
 
@@ -328,6 +348,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
           key={dialogKey}
           {...dialogProps}
           closeOnPopstate={closeOnPopstate}
+          _managedByProvider={true} // ✅ 由 Provider 管理，避免重复监听 popstate
           onClose={() => {
             updateDialogs((prev) => prev.filter((d) => d.key !== dialogKey));
             onClose?.();

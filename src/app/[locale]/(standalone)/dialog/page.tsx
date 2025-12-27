@@ -119,8 +119,24 @@ export default function Demo() {
       <Button
         onClick={() => {
           router.back();
-          dialog.open("X1Dialog", {
+          // dialog.open("X1Dialog", {
+          //   closeOnPopstate: false,
+          // });
+          Dialog.open({
             closeOnPopstate: false,
+            content: (
+              <div className="p-10 bg-white rounded-md flex flex-col justify-center gap-4 items-center">
+                <div>这是弹框内容</div>
+                <Button
+                  onClick={() => {
+                    Dialog.close();
+                  }}
+                >
+                  关闭
+                </Button>
+              </div>
+            ),
+            onClose: () => console.log("closed"),
           });
         }}
       >
