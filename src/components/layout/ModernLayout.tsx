@@ -1,5 +1,9 @@
 // src/components/layout/ModernLayout.tsx
-export default function ModernLayout({ children }: { children: React.ReactNode }) {
+export default function ModernLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-h-screen">
       <header className="h-14 flex items-center border-b px-(--card-padding) border-(--header-border-color)">

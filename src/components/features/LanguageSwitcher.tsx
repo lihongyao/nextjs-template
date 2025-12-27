@@ -31,7 +31,9 @@ export default function LanguageSwitcher() {
   const brand = useBrandConfig();
 
   // 当前语言前缀
-  const currentLang = routing.locales.find((locale) => pathname?.startsWith(`/${locale}`)) ?? routing.defaultLocale;
+  const currentLang =
+    routing.locales.find((locale) => pathname?.startsWith(`/${locale}`)) ??
+    routing.defaultLocale;
 
   // 切换语言
   const onSwitchLang = (lang: { code: string; label: string }) => {
@@ -60,7 +62,9 @@ export default function LanguageSwitcher() {
             onClick={() => onSwitchLang(lang)}
             className={clsx(
               "px-3 py-1.5 border rounded text-sm transition-colors cursor-pointer",
-              isActive ? "bg-blue-600 text-white border-blue-600" : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100",
+              isActive
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white text-gray-700 border-gray-300 hover:bg-gray-100",
             )}
           >
             {lang.label}

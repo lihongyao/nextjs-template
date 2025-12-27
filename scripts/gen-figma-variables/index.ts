@@ -1,7 +1,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Color, FigmaLocalResponse, FigmaPublishedResponse, TokenMode, Tokens, VariableAlias } from "./type";
+import type {
+  Color,
+  FigmaLocalResponse,
+  FigmaPublishedResponse,
+  TokenMode,
+  Tokens,
+  VariableAlias,
+} from "./type";
 
 /**
  * 美术/研发 Collection Name 约定
@@ -36,10 +43,14 @@ const host = `https://api.figma.com/v1/files/${figmaFileKey}/variables`;
 (async function main() {
   // 1. 获取 Figma 变量数据
   console.log("Fetching Figma local variables...");
-  const localSource = (await fetchFigmaVariables("/local")) as FigmaLocalResponse;
+  const localSource = (await fetchFigmaVariables(
+    "/local",
+  )) as FigmaLocalResponse;
 
   console.log("Fetching Figma published variables...");
-  const publishedSource = (await fetchFigmaVariables("/published")) as FigmaPublishedResponse;
+  const publishedSource = (await fetchFigmaVariables(
+    "/published",
+  )) as FigmaPublishedResponse;
 
   // 2. 解析变量数据
   console.log("Parsing variables...");
@@ -49,7 +60,11 @@ const host = `https://api.figma.com/v1/files/${figmaFileKey}/variables`;
   console.log("Generating source file...");
   ensureDir(styleRoot);
   const sourcePath = path.join(styleRoot, "figma-variables.json");
-  fs.writeFileSync(sourcePath, JSON.stringify(parsedVariables, null, 2), "utf-8");
+  fs.writeFileSync(
+    sourcePath,
+    JSON.stringify(parsedVariables, null, 2),
+    "utf-8",
+  );
 
   // 4. 生成 CSS 变量文件
   console.log("Generating CSS variables...");
@@ -81,8 +96,11 @@ function formatVariableName(name: string) {
  * @param path
  */
 async function fetchFigmaVariables(path: string) {
-  const res = await fetch(`${host}${path}`, { headers: { "X-Figma-Token": figmaToken } });
-  if (!res.ok) throw new Error(`Failed to fetch Figma variables: ${res.statusText}`);
+  const res = await fetch(`${host}${path}`, {
+    headers: { "X-Figma-Token": figmaToken },
+  });
+  if (!res.ok)
+    throw new Error(`Failed to fetch Figma variables: ${res.statusText}`);
   return res.json();
 }
 
@@ -103,18 +121,33 @@ async function fetchFigmaVariables(path: string) {
  * @param publishedSource 已发布变量数据
  * @returns
  */
-function parseVariables(localSource: FigmaLocalResponse, publishedSource: FigmaPublishedResponse) {
+function parseVariables(
+  localSource: FigmaLocalResponse,
+  publishedSource: FigmaPublishedResponse,
+) {
   /**
    * 1. 获取已发布的集合和变量Keys
    */
-  const publishedCollectionKeys = new Set(Object.keys(publishedSource.meta.variableCollections));
-  const publishedVariableKeys = new Set(Object.keys(publishedSource.meta.variables));
+  const publishedCollectionKeys = new Set(
+    Object.keys(publishedSource.meta.variableCollections),
+  );
+  const publishedVariableKeys = new Set(
+    Object.keys(publishedSource.meta.variables),
+  );
 
   /**
    * 2. 在本地数据中过滤出已发布的集合和变量对应的数据体
    */
-  const variableCollections = Object.fromEntries(Object.entries(localSource.meta.variableCollections).filter(([key]) => publishedCollectionKeys.has(key)));
-  const variables = Object.fromEntries(Object.entries(localSource.meta.variables).filter(([key]) => publishedVariableKeys.has(key)));
+  const variableCollections = Object.fromEntries(
+    Object.entries(localSource.meta.variableCollections).filter(([key]) =>
+      publishedCollectionKeys.has(key),
+    ),
+  );
+  const variables = Object.fromEntries(
+    Object.entries(localSource.meta.variables).filter(([key]) =>
+      publishedVariableKeys.has(key),
+    ),
+  );
 
   /**
    * 3. 定义变量，存储解析结果（json）
@@ -149,7 +182,11 @@ function parseVariables(localSource: FigmaLocalResponse, publishedSource: FigmaP
          * 处理引用变量 (VARIABLE_ALIAS)
          * 判断 value 是否是别名，即语义化变量，引用了另一个变量
          */
-        if (value && typeof value === "object" && (value as VariableAlias).type === "VARIABLE_ALIAS") {
+        if (
+          value &&
+          typeof value === "object" &&
+          (value as VariableAlias).type === "VARIABLE_ALIAS"
+        ) {
           const aliasVar = variables[(value as VariableAlias).id];
           if (!aliasVar) continue;
           value = `var(${formatVariableName(aliasVar.name)})`;
@@ -576,7 +613,9 @@ function generatorBundledCSS(tokens: Tokens, options?: { minify?: boolean }) {
   const finalCSS = options?.minify ? minifyCSS(css) : header + css;
 
   fs.writeFileSync(outputFile, finalCSS, "utf-8");
-  console.log(`✅ Common CSS 已生成: ${outputFile} ${options?.minify ? "(minified)" : ""}`);
+  console.log(
+    `✅ Common CSS 已生成: ${outputFile} ${options?.minify ? "(minified)" : ""}`,
+  );
 }
 // ================== 组合生成 ==================
 
@@ -590,7 +629,10 @@ function generatorBundledCSS(tokens: Tokens, options?: { minify?: boolean }) {
  * - core：基础 tokens + skins + themes（多文件）
  * - minified：全量合并为单文件
  */
-export function generateCSS(parsedVariables: Tokens, options: { mode: "split" | "layered" | "bundle" } = { mode: "split" }) {
+export function generateCSS(
+  parsedVariables: Tokens,
+  options: { mode: "split" | "layered" | "bundle" } = { mode: "split" },
+) {
   switch (options.mode) {
     case "split":
       generatorPrimitives(parsedVariables);

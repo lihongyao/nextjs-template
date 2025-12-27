@@ -25,18 +25,26 @@ function clearToken() {
 async function refreshToken(): Promise<string> {
   const current = getTokenFromStorage();
   if (!current?.refreshToken) throw new ApiError(401, "No refresh token");
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/token/refresh`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refreshToken: current.refreshToken }),
-  });
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/token/refresh`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: current.refreshToken }),
+    },
+  );
   const json = await res.json();
-  if (json.code !== 0 && json.code !== 200) throw new ApiError(json.code, json.msg);
+  if (json.code !== 0 && json.code !== 200)
+    throw new ApiError(json.code, json.msg);
   setToken(json.data);
   return json.data.token;
 }
 
-export async function clientFetch<T>(url: string, options: FetchOptions = {}, isLogin = false): Promise<T> {
+export async function clientFetch<T>(
+  url: string,
+  options: FetchOptions = {},
+  isLogin = false,
+): Promise<T> {
   let token = getTokenFromStorage()?.token || "";
   if (isLogin && !token) throw new ApiError(10001, "请登录");
 

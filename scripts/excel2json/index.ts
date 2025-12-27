@@ -38,7 +38,9 @@ const excelPath = path.join(INPUT_DIR, EXCEL_FILE_NAME);
 console.log(`📂 读取 Excel 文件: ${excelPath}`);
 
 const workbook = XLSX.readFile(excelPath);
-const sheet = SHEET_NAME ? workbook.Sheets[SHEET_NAME] : workbook.Sheets[workbook.SheetNames[0]];
+const sheet = SHEET_NAME
+  ? workbook.Sheets[SHEET_NAME]
+  : workbook.Sheets[workbook.SheetNames[0]];
 
 if (!sheet) throw new Error(`❌ 找不到 Excel sheet: ${SHEET_NAME}`);
 console.log(`📄 使用 Sheet: ${SHEET_NAME || workbook.SheetNames[0]}`);
@@ -47,7 +49,9 @@ const rawData: ExcelRow[] = XLSX.utils.sheet_to_json(sheet);
 console.log(`🔑 Excel 共读取 ${rawData.length} 条记录`);
 
 // === 4. 获取语言列 ===
-const header: string[] = Object.keys(rawData[0] || {}).filter((key) => key !== "key" && key !== "remark");
+const header: string[] = Object.keys(rawData[0] || {}).filter(
+  (key) => key !== "key" && key !== "remark",
+);
 console.log(`🌐 发现语言列: ${header.join(", ")}`);
 
 // === 5. 递归写入对象属性 ===
@@ -93,7 +97,9 @@ if (!fs.existsSync(OUTPUT_DIR)) fs.mkdirSync(OUTPUT_DIR, { recursive: true });
 header.forEach((lang) => {
   const filePath = path.join(OUTPUT_DIR, `${lang}.json`);
   fs.writeFileSync(filePath, JSON.stringify(result[lang], null, 2), "utf8");
-  console.log(`✅ [${lang}] 文件生成: ${filePath}，共 ${langCounts[lang]} 条有效翻译`);
+  console.log(
+    `✅ [${lang}] 文件生成: ${filePath}，共 ${langCounts[lang]} 条有效翻译`,
+  );
 });
 
 console.log(`🎉 转换完成！共生成 ${header.length} 个语言文件`);

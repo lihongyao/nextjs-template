@@ -24,7 +24,10 @@ export interface FigmaLocalVariable {
   key: string;
   variableCollectionId: string;
   resolvedType: VariableResolvedType;
-  valuesByMode: Record<string, boolean | number | string | Color | VariableAlias>;
+  valuesByMode: Record<
+    string,
+    boolean | number | string | Color | VariableAlias
+  >;
   remote: boolean;
   description: string;
   hiddenFromPublishing: boolean;
@@ -45,7 +48,10 @@ export interface FigmaLocalVariableCollection {
   parentVariableCollectionId: string;
   inheritedVariableIds: string[];
   localVariableIds: string[];
-  variableOverrides: Record<string, Record<string, boolean | number | string | Color | VariableAlias>>;
+  variableOverrides: Record<
+    string,
+    Record<string, boolean | number | string | Color | VariableAlias>
+  >;
   deletedButReferenced: boolean;
 }
 

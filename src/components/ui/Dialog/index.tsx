@@ -1,11 +1,35 @@
-// src/components/ui/Dialog/index.tsx
 "use client";
 
-import { type ReactNode, useEffect, useState } from "react";
+import {
+  forwardRef,
+  type ReactNode,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
+import { createRoot, type Root } from "react-dom/client";
 import { cn } from "@/lib/class-helpers";
 import "./animate.css";
-import { createRoot, type Root } from "react-dom/client";
+import React, { createContext, useContext } from "react";
+import { dialogRegistry } from "@/components/features/dialogs";
 
+/** 进入动画 */
+export type DialogEnterAnimation =
+  | "fade-in"
+  | "zoom-in"
+  | "slide-up-in"
+  | "slide-right-in";
+/** 退出动画 */
+export type DialogExitAnimation =
+  | "fade-out"
+  | "zoom-out"
+  | "slide-up-out"
+  | "slide-right-out";
+
+/** Dialog 组件 props */
 interface DialogProps {
   /** 类名 - 遮罩 */
   maskClassName?: string;
@@ -21,105 +45,170 @@ interface DialogProps {
   maskClosable?: boolean;
   /** 自动销毁 */
   autoDestroy?: number;
+  /** 进入动画 */
+  enterAnimation?: DialogEnterAnimation;
+  /** 退出动画 */
+  exitAnimation?: DialogExitAnimation;
   /** 关闭 */
   onClose?: () => void;
-  /** 动画结束 */
-  onAnimationEnd?: () => void;
+  /** 路由前进/后退时是否自动关闭 */
+  closeOnPopstate?: boolean;
 }
 
-export function Dialog({ open = true, children, zIndex = 4000, maskClosable = true, autoDestroy, maskClassName, contentClassName, onClose, onAnimationEnd }: DialogProps) {
+// === 全局 Dialog 基础 ===
+
+/** 全局可见 Dialog 集合，用于 body scroll 管理 */
+const visibleDialogs = new Set<string>();
+
+/** 锁住 body 滚动 */
+const lockBodyScroll = () => {
+  document.body.style.overflow = "hidden";
+};
+
+/** 解锁 body 滚动（只有没有任何弹窗时才解锁） */
+const unlockBodyScroll = () => {
+  if (visibleDialogs.size === 0) document.body.style.overflow = "";
+};
+
+/** 对外暴露的 Ref 方法类型 */
+interface DialogRef {
+  setIsExiting: () => void;
+}
+
+// === Dialog 组件 ===
+
+/** 支持 forwardRef，以便静态方法或 Provider 控制弹窗关闭 */
+const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
+  const {
+    open = true,
+    children,
+    zIndex = 4000,
+    maskClosable = true,
+    autoDestroy,
+    maskClassName,
+    contentClassName,
+    enterAnimation = "zoom-in",
+    exitAnimation = "zoom-out",
+    onClose,
+    closeOnPopstate = true,
+  } = props;
+
   const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(open);
-  const [closing, setClosing] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);
 
+  // 是否为受控组件（通过是否显式传入 open 判断）
   const isControlled = open !== undefined;
 
-  // 挂载标记
+  const dialogId = useRef(
+    `DIALOG_${Math.random().toString(36).slice(2).toUpperCase()}`,
+  );
+  const autoDestroyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useImperativeHandle(ref, () => ({
+    setIsExiting: () => setIsExiting(true),
+  }));
+
   useEffect(() => setMounted(true), []);
 
-  // 处理受控 open 状态
   useEffect(() => {
     if (!isControlled) return;
-
     if (open) {
       setVisible(true);
-      setClosing(false);
+      setIsExiting(false);
     } else if (visible) {
-      setClosing(true);
+      setIsExiting(true);
     }
   }, [open, isControlled, visible]);
 
-  // 控制 body 滚动
-  useEffect(() => {
-    if (visible && !closing) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [visible, closing]);
-
-  // autoDestroy，每次 open=true 都会触发
   useEffect(() => {
     if (!autoDestroy || !visible) return;
 
-    const timer = setTimeout(() => setClosing(true), autoDestroy * 1000);
-    return () => clearTimeout(timer);
+    autoDestroyTimer.current = setTimeout(
+      () => setIsExiting(true),
+      autoDestroy * 1000,
+    );
+
+    return () => {
+      if (autoDestroyTimer.current) {
+        clearTimeout(autoDestroyTimer.current);
+        autoDestroyTimer.current = null; // ✅ 清理引用，防止重复清理
+      }
+    };
   }, [autoDestroy, visible]);
 
-  const handleMaskClick = () => {
-    if (maskClosable) setClosing(true);
-  };
+  const handleMaskClick = () => maskClosable && setIsExiting(true);
 
-  // 动画结束处理
-  const handleAnimationEnd = () => {
-    if (!closing) return;
+  const handleAnimationEnd = (e: React.AnimationEvent) => {
+    // 只响应遮罩自身动画结束，避免子元素动画冒泡
+    if (e.target !== e.currentTarget) return;
+    if (!isExiting) return;
 
     setVisible(false);
-    setClosing(false);
+    setIsExiting(false);
 
-    onAnimationEnd?.();
+    visibleDialogs.delete(dialogId.current);
+    unlockBodyScroll();
     onClose?.();
   };
 
+  useEffect(() => {
+    if (visible && !isExiting) {
+      visibleDialogs.add(dialogId.current);
+      lockBodyScroll();
+    }
+    return () => {
+      visibleDialogs.delete(dialogId.current);
+      unlockBodyScroll();
+    };
+  }, [visible, isExiting]);
+
   if (!mounted || !visible) return null;
 
-  return (
+  const content = (
     <div data-name="dialog-root" className="fixed inset-0" style={{ zIndex }}>
-      <div className={cn("h-full w-full bg-black/70 backdrop-blur-xs", closing ? "fade-out" : "fade-in", maskClassName)} onClick={handleMaskClick} onAnimationEnd={handleAnimationEnd} />
       <div
-        className={cn("absolute top-1/2 left-1/2 -translate-1/2 overflow-hidden", closing ? "zoom-out" : "zoom-in", contentClassName)}
-        onClick={(e) => e.stopPropagation()}
+        className={cn(
+          "h-full w-full bg-black/70 backdrop-blur-xs flex justify-center items-center",
+          isExiting ? "fade-out" : "fade-in",
+          maskClassName,
+        )}
+        onClick={handleMaskClick}
         onAnimationEnd={handleAnimationEnd}
       >
-        {children}
+        <div
+          className={cn(
+            isExiting ? exitAnimation : enterAnimation,
+            contentClassName,
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {children}
+        </div>
       </div>
     </div>
   );
-}
 
-// --- Static Dialog Manager ---
-// ======================================
-// 静态方法实现
-// ======================================
-type DialogStaticOptions = {
+  return createPortal(content, document.body);
+});
+
+// === 导出 Dialog ===
+export const Dialog = DialogComponent as typeof DialogComponent & {
+  open: (options: DialogStaticOptions) => { key: string; close: () => void };
+  close: (key?: string) => void;
+};
+
+// === 静态方法管理 ===
+type DialogStaticOptions = Omit<DialogProps, "open" | "children"> & {
   content: ReactNode;
-  maskClosable?: boolean;
-  autoDestroy?: number;
-  contentClassName?: string;
-  maskClassName?: string;
-  onClose?: () => void;
-  zIndex?: number;
 };
 
 type DialogEntry = {
-  container: HTMLDivElement;
   root: Root;
+  container: HTMLDivElement;
   key: string;
   close: () => void;
+  closeDialog: () => void;
 };
 
 let dialogZIndex = 4000;
@@ -127,62 +216,247 @@ const dialogMap = new Map<string, DialogEntry>();
 
 Dialog.open = (options: DialogStaticOptions) => {
   const key = `DIALOG_${Math.random().toString(36).slice(2).toUpperCase()}`;
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-  const root = createRoot(container);
-
   let closing = false;
 
   const close = () => {
     if (closing) return;
     closing = true;
-    // 触发动画
-    root.render(
-      <Dialog
-        open={false}
-        maskClosable={options.maskClosable}
-        autoDestroy={options.autoDestroy}
-        contentClassName={options.contentClassName}
-        maskClassName={options.maskClassName}
-        zIndex={options.zIndex ?? dialogZIndex++}
-        onClose={() => {
-          root.unmount();
-          container.remove();
-          dialogMap.delete(key);
-          options.onClose?.();
-        }}
-      >
-        {options.content}
-      </Dialog>,
-    );
+    dialogMap.get(key)?.closeDialog();
   };
 
+  const dialogRef: { current: DialogRef | null } = { current: null };
+
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+
   root.render(
-    <Dialog
-      open={true}
+    <DialogComponent
+      ref={dialogRef}
+      open
       maskClosable={options.maskClosable}
       autoDestroy={options.autoDestroy}
       contentClassName={options.contentClassName}
       maskClassName={options.maskClassName}
       zIndex={options.zIndex ?? dialogZIndex++}
-      onClose={close}
+      onClose={() => {
+        root.unmount();
+        container.remove();
+        dialogMap.delete(key);
+        options.onClose?.();
+      }}
+      closeOnPopstate={options.closeOnPopstate}
     >
       {options.content}
-    </Dialog>,
+    </DialogComponent>,
   );
 
-  dialogMap.set(key, { container, root, key, close });
+  dialogMap.set(key, {
+    root,
+    container,
+    key,
+    close,
+    closeDialog: () => dialogRef.current?.setIsExiting(),
+  });
 
   return { key, close };
 };
 
 Dialog.close = (key?: string) => {
-  if (key) {
-    const entry = dialogMap.get(key);
-    entry?.close();
-  } else {
+  if (key) dialogMap.get(key)?.close();
+  else
     dialogMap.forEach((entry) => {
       entry.close();
     });
+};
+
+// === Provider + useDialog ===
+
+export type DialogType = keyof typeof dialogRegistry;
+
+export type OpenDialogOptions<K extends DialogType = DialogType> = Omit<
+  DialogProps,
+  "open" | "children"
+> & {
+  props?: Partial<React.ComponentProps<(typeof dialogRegistry)[K]>>;
+};
+
+type DialogInstance = {
+  key: string;
+  type: DialogType;
+  content: ReactNode;
+  zIndex: number;
+  requestClose: () => void;
+  closeOnPopstate: boolean;
+};
+
+type DialogContextValue = {
+  open: <K extends DialogType>(
+    type: K,
+    options?: OpenDialogOptions<K>,
+  ) => DialogInstance;
+  queue: <K extends DialogType>(
+    type: K,
+    options?: OpenDialogOptions<K>,
+  ) => Promise<void>;
+  closeTop: () => void;
+  close: (type?: DialogType) => void;
+};
+
+const DialogContext = createContext<DialogContextValue | null>(null);
+
+export const useDialog = () => {
+  const ctx = useContext(DialogContext);
+  if (!ctx)
+    throw new Error("useDialogContext must be used within DialogProvider");
+  return ctx;
+};
+
+// 全局 dialog 实例，用于在非 React 上下文中调用
+let globalDialogInstance: DialogContextValue | null = null;
+// 获取全局 dialog 实例（用于非 React 上下文）
+export const getGlobalDialog = (): DialogContextValue => {
+  if (!globalDialogInstance) {
+    throw new Error("DialogProvider 尚未初始化，无法使用全局 dialog");
   }
+  return globalDialogInstance;
+};
+
+export const DialogProvider = ({ children }: { children: ReactNode }) => {
+  const [dialogs, setDialogs] = useState<DialogInstance[]>([]);
+  const dialogsRef = useRef<DialogInstance[]>([]);
+  const zIndexBaseRef = useRef(4000);
+
+  // 监听浏览器前进后退，关闭弹框
+  useEffect(() => {
+    const handlePopstate = () => {
+      dialogsRef.current.forEach((d) => {
+        if (d.closeOnPopstate) {
+          d.requestClose();
+        }
+      });
+    };
+    window.addEventListener("popstate", handlePopstate);
+    return () => {
+      window.removeEventListener("popstate", handlePopstate);
+    };
+  }, []);
+
+  const updateDialogs = (
+    updater: (prev: DialogInstance[]) => DialogInstance[],
+  ) => {
+    setDialogs((prev) => {
+      const next = updater(prev);
+      dialogsRef.current = next;
+      return next;
+    });
+  };
+
+  const open = <K extends DialogType>(
+    type: K,
+    options: OpenDialogOptions<K> = {},
+  ): DialogInstance => {
+    const {
+      props = {} as OpenDialogOptions<K>["props"],
+      onClose,
+      closeOnPopstate = true,
+      ...dialogProps
+    } = options;
+
+    const Component = dialogRegistry[type];
+    if (!Component) throw new Error(`Dialog "${type}" is not registered`);
+
+    const dialogKey = `DIALOG_${Math.random().toString(36).slice(2).toUpperCase()}`;
+    let requestClose: () => void;
+
+    const instance: DialogInstance = {
+      key: dialogKey,
+      type,
+      zIndex: Math.min(zIndexBaseRef.current++, 9999), // ✅ 限制 zIndex 最大值
+      closeOnPopstate,
+      content: (
+        <Dialog
+          key={dialogKey}
+          {...dialogProps}
+          closeOnPopstate={closeOnPopstate}
+          onClose={() => {
+            updateDialogs((prev) => prev.filter((d) => d.key !== dialogKey));
+            onClose?.();
+          }}
+        >
+          {/* @ts-expect-error */}
+          <Component {...props} onClose={() => requestClose()} />
+        </Dialog>
+      ),
+      requestClose: () => {},
+    };
+
+    requestClose = () => {
+      updateDialogs((prev) =>
+        prev.map((d) => {
+          if (d.key !== dialogKey) return d;
+          if (React.isValidElement(d.content)) {
+            // 通过 controlled open 触发退出动画
+            return {
+              ...d,
+              content: React.cloneElement(
+                d.content as React.ReactElement<{ open?: boolean }>,
+                { open: false },
+              ),
+            };
+          }
+          return d;
+        }),
+      );
+    };
+    instance.requestClose = requestClose;
+
+    updateDialogs((prev) => [...prev, instance]);
+
+    return instance;
+  };
+
+  const queue: DialogContextValue["queue"] = (type, options) =>
+    new Promise<void>((resolve) => {
+      open(type, {
+        ...options,
+        onClose: () => {
+          options?.onClose?.();
+          resolve();
+        },
+      });
+    });
+
+  const closeTop = () => {
+    const top = dialogsRef.current[dialogsRef.current.length - 1];
+    top?.requestClose();
+  };
+
+  const close = (type?: DialogType) => {
+    if (type) {
+      dialogsRef.current
+        .filter((d) => d.type === type)
+        .forEach((d) => {
+          d.requestClose();
+        });
+    } else {
+      dialogsRef.current.forEach((d) => {
+        d.requestClose();
+      });
+    }
+  };
+
+  // 更新全局实例
+  const dialogValue: DialogContextValue = { open, queue, closeTop, close };
+  globalDialogInstance = dialogValue;
+
+  // ✅ 性能优化：只在 dialogs 数组变化时重新渲染内容
+  const dialogContent = useMemo(() => dialogs.map((d) => d.content), [dialogs]);
+
+  return (
+    <DialogContext.Provider value={dialogValue}>
+      {children}
+      {dialogContent}
+    </DialogContext.Provider>
+  );
 };

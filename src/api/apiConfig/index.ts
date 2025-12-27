@@ -48,16 +48,21 @@ function clearToken(): void {
 
 async function refreshToken(): Promise<string> {
   const currentToken = getToken();
-  if (!currentToken?.refreshToken) throw new Error("No refresh token available");
+  if (!currentToken?.refreshToken)
+    throw new Error("No refresh token available");
 
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/token/refresh`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken: currentToken.refreshToken }),
-    });
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/v1/token/refresh`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refreshToken: currentToken.refreshToken }),
+      },
+    );
     const json: ApiResponse<TokenData> = await res.json();
-    if (json.code !== 0 && json.code !== 200) throw new Error(json.msg || "刷新 token 失败");
+    if (json.code !== 0 && json.code !== 200)
+      throw new Error(json.msg || "刷新 token 失败");
     setToken(json.data);
     return json.data.token;
   } catch (err) {
@@ -82,7 +87,11 @@ export class ApiError extends Error {
   }
 }
 
-async function fetchWithRetry(url: string, options: RequestInit, retries: number): Promise<Response> {
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  retries: number,
+): Promise<Response> {
   for (let i = 0; i <= retries; i++) {
     try {
       return await fetch(url, options);
@@ -98,7 +107,13 @@ async function fetchWithRetry(url: string, options: RequestInit, retries: number
 /**
  * apiFetch 封装
  */
-export async function apiFetch<T = unknown>(url: string, options: FetchOptions = {}, retry = 0, isLogin = false, serverHeaders?: Headers): Promise<T> {
+export async function apiFetch<T = unknown>(
+  url: string,
+  options: FetchOptions = {},
+  retry = 0,
+  isLogin = false,
+  serverHeaders?: Headers,
+): Promise<T> {
   const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "";
   const fullUrl = url.startsWith("http") ? url : `${BASE_URL}${url}`;
 
@@ -111,7 +126,8 @@ export async function apiFetch<T = unknown>(url: string, options: FetchOptions =
 
   const headers = new Headers(options.headers);
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  if (!headers.has("Content-Type"))
+    headers.set("Content-Type", "application/json");
   options.headers = headers;
 
   const { controller, clear } = createTimeoutController(timeout);
@@ -137,7 +153,13 @@ export async function apiFetch<T = unknown>(url: string, options: FetchOptions =
       }
       const newToken = await refreshPromise;
       headers.set("Authorization", `Bearer ${newToken}`);
-      return apiFetch<T>(url, { ...options, headers }, retry, isLogin, serverHeaders);
+      return apiFetch<T>(
+        url,
+        { ...options, headers },
+        retry,
+        isLogin,
+        serverHeaders,
+      );
     }
 
     // ----------------------

@@ -7,6 +7,8 @@ const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
   },
+  // seems to interfere with view transitions during `next dev`
+  devIndicators: false,
 };
 
 const withNextIntl = createNextIntlPlugin();

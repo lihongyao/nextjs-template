@@ -27,61 +27,23 @@
   }
 }
 
-/* From Left (New Page Enters from Left) */
-@keyframes slide-in-from-left {
-  from {
-    transform: translateX(-100%);
-    opacity: 0.8;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* To Right (Old Page Exits to Right) */
-@keyframes slide-out-to-right {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0.8;
-  }
-}
-
 /* 绑定动画 */
-/* (新页面从右滑入) */
-::view-transition-old(root) {
-  animation: slide-out-to-left 0.3s ease-in-out forwards;
-}
-
-::view-transition-new(root) {
+/* 页面进入 */
+::view-transition-new(.page-enter) {
   animation: slide-in-from-right 0.3s ease-in-out forwards;
 }
 
-/* (新页面从左滑入) */
-
-/* ::view-transition-old(root) {
-  animation: slide-out-to-right 0.3s ease-in-out forwards;
-}
-::view-transition-new(root) {
-  animation: slide-in-from-left 0.3s ease-in-out forwards;
-} */
-
-/* 前进：motion -> details */
-/* .forward-transition ::view-transition-old(*) {
+/* 页面退出 */
+::view-transition-old(.page-exit) {
   animation: slide-out-to-left 0.3s ease-in-out forwards;
 }
-.forward-transition ::view-transition-new(*) {
-  animation: slide-in-from-right 0.3s ease-in-out forwards;
-} */
 
-/* 返回：details -> motion */
-/* .back-transition ::view-transition-old(*) {
-  animation: slide-out-to-right 0.3s ease-in-out forwards;
+/* 禁用动画 */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    /* alternatively, you could design more subtle variants */
+    animation: none !important;
+  }
 }
-.back-transition ::view-transition-new(*) {
-  animation: slide-in-from-left 0.3s ease-in-out forwards;
-} */

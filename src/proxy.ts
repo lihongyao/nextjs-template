@@ -31,7 +31,9 @@ function modalRewriteUrl(request: NextRequest) {
   }
 
   const segments = pathname.split("/").filter(Boolean);
-  const modalIndex = segments.findIndex((segment) => segment.startsWith(MODAL_PREFIX));
+  const modalIndex = segments.findIndex((segment) =>
+    segment.startsWith(MODAL_PREFIX),
+  );
   if (modalIndex === -1) {
     return null;
   }
@@ -43,7 +45,8 @@ function modalRewriteUrl(request: NextRequest) {
   const defaultLocale = routing.defaultLocale;
 
   // 检查路径是否包含语言前缀，则加上默认语言
-  const hasLocalePrefix = basePaths.length > 0 && locales.includes(basePaths[0]);
+  const hasLocalePrefix =
+    basePaths.length > 0 && locales.includes(basePaths[0]);
   if (!hasLocalePrefix) {
     basePaths.unshift(defaultLocale);
   }

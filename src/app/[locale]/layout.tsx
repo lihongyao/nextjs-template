@@ -1,19 +1,36 @@
 // src/app/[lang]/layout.tsx
-import { ViewTransitions } from "next-view-transitions";
+// import { ViewTransitions } from "next-view-transitions";
 import "./globals.css";
+import type { Viewport } from "next";
 import { notFound } from "next/navigation";
-import Script from "next/script";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
+import { ViewTransition } from "react";
 import ClientInitializer from "@/components/features/ClientInitializer";
 import RouteModalRenderer from "@/components/features/RouteModalRenderer";
 import ScrollManager from "@/components/features/ScrollManager";
+import { DialogProvider } from "@/components/ui/Dialog";
 import { routing } from "@/i18n/routing";
 import { getBrandConfigSSR } from "@/lib/brand";
 import { BrandConfigProvider } from "@/providers/brand.provider";
-import { DialogProvider } from "@/providers/dialog.provider";
 
-export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
+export const runtime = "edge";
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
+export default async function LocaleLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
   // 获取当前语言
   const { locale } = await params;
 
@@ -33,16 +50,30 @@ export default async function LocaleLayout({ children, params }: { children: Rea
   const brand = await getBrandConfigSSR();
 
   return (
-    <html lang={locale} data-theme={brand.theme} data-skin={brand.skin} suppressHydrationWarning className="bg-black">
+    <html
+      lang={locale}
+      data-theme={brand.theme}
+      data-skin={brand.skin}
+      suppressHydrationWarning
+    >
       <head>
+        <meta
+          name="viewport"
+          content="width=device-width,initial-scale=1.0,viewport-fit=cover,minimum-scale=1,maximum-scale=1,user-scalable=no"
+        />
         {/* SSR 加载主题、皮肤、覆盖文件 */}
         <link rel="stylesheet" href={`/styles/tokens/index.css`} />
         <link rel="stylesheet" href={`/styles/themes/${brand.theme}.css`} />
         <link rel="stylesheet" href={`/styles/skins/${brand.skin}.css`} />
-        {brand.overrides && <link rel="stylesheet" href={`/styles/overrides/${brand.brandName}.css`} />}
+        {brand.overrides && (
+          <link
+            rel="stylesheet"
+            href={`/styles/overrides/${brand.brandName}.css`}
+          />
+        )}
       </head>
       <body>
-        <ViewTransitions>
+        <ViewTransition name="page" enter="page-enter" exit="page-exit">
           <NextIntlClientProvider locale={locale} messages={messages}>
             <BrandConfigProvider value={brand}>
               <DialogProvider>
@@ -56,7 +87,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
               </DialogProvider>
             </BrandConfigProvider>
           </NextIntlClientProvider>
-        </ViewTransitions>
+        </ViewTransition>
       </body>
     </html>
   );

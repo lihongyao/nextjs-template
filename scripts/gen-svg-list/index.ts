@@ -93,7 +93,11 @@ export type SvgPathName = typeof SVG_PATH_NAMES[number];
   await fs.writeFile(outputFile, formatted, "utf8");
 
   if (showLog) {
-    console.log(chalk.green(`✔️ 已生成 ${chalk.yellow(outputFile)}，共 ${svgNames.length} 个图标`));
+    console.log(
+      chalk.green(
+        `✔️ 已生成 ${chalk.yellow(outputFile)}，共 ${svgNames.length} 个图标`,
+      ),
+    );
   }
 }
 
@@ -105,7 +109,10 @@ export type SvgPathName = typeof SVG_PATH_NAMES[number];
  * @param delay 防抖延迟（毫秒）
  * @returns 返回防抖后的函数
  */
-function debounce<F extends (...args: unknown[]) => void>(fn: F, delay: number): F {
+function debounce<F extends (...args: unknown[]) => void>(
+  fn: F,
+  delay: number,
+): F {
   let timer: NodeJS.Timeout | null = null;
   return ((...args: Parameters<F>) => {
     if (timer) clearTimeout(timer);

@@ -1,4 +1,4 @@
-import { Link } from "next-view-transitions";
+import { Link } from "@/i18n/navigation";
 import { Routes } from "@/lib/routes";
 
 export default function MotionPage() {

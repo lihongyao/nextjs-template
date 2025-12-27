@@ -20,7 +20,9 @@ export default function ClientComp() {
         {/* 3. 自定义渲染 */}
         <div>
           {t.rich("profile.reward2", {
-            tag: (children) => <span className="text-red-500 font-bold">{children}</span>,
+            tag: (children) => (
+              <span className="text-red-500 font-bold">{children}</span>
+            ),
             point,
           })}
         </div>
