@@ -23,9 +23,7 @@ export default async function DynamicCompsPage() {
   const configModules = await Promise.all(
     comps.map(async (c) => {
       try {
-        const mod = await import(
-          `../../../../components/widgets/${c.type}/index.ts`
-        );
+        const mod = await import(`../../../../components/widgets/${c.type}/index.ts`);
         return mod.default;
       } catch (error) {
         console.log(error);
@@ -58,10 +56,7 @@ export default async function DynamicCompsPage() {
         const SuspenseComp = loadDynamicComponent(item.type, "suspense");
 
         return (
-          <ClientOnly
-            key={item.type}
-            fallback={<SuspenseComp {...item.data} />}
-          >
+          <ClientOnly key={item.type} fallback={<SuspenseComp {...item.data} />}>
             <ClientComp {...item.data} />
           </ClientOnly>
         );

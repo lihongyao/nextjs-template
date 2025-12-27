@@ -3,9 +3,6 @@ import type { ComponentType } from "react";
 import type { ModalComponentProps } from "@/components/features/RouteModalRenderer";
 import Profile from "./Profile";
 
-export const ModalComponents: Record<
-  string,
-  ComponentType<ModalComponentProps>
-> = {
+export const ModalComponents: Record<string, ComponentType<ModalComponentProps>> = {
   "modal-profile": Profile,
 };

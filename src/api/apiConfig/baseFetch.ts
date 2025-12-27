@@ -19,11 +19,7 @@ export interface FetchOptions extends RequestInit {
   timeout?: number;
 }
 
-export async function baseFetch<T>(
-  url: string,
-  options: FetchOptions = {},
-  retry = 0,
-): Promise<T> {
+export async function baseFetch<T>(url: string, options: FetchOptions = {}, retry = 0): Promise<T> {
   const timeout = options.timeout ?? 60000;
   delete options.timeout;
 

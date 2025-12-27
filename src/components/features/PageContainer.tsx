@@ -2,11 +2,7 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export default function MotionLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function MotionLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [isBack, setIsBack] = useState(false);
 
@@ -15,9 +11,5 @@ export default function MotionLayout({
     setIsBack(pathname === "/motion");
   }, [pathname]);
 
-  return (
-    <div className={isBack ? "back-transition" : "forward-transition"}>
-      {children}
-    </div>
-  );
+  return <div className={isBack ? "back-transition" : "forward-transition"}>{children}</div>;
 }

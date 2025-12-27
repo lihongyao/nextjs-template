@@ -1,7 +1,3 @@
 {
-  "recommendations": [
-    "biomejs.biome",
-    "esbenp.prettier-vscode",
-    "lokalise.i18n-ally"
-  ]
+  "recommendations": ["biomejs.biome", "esbenp.prettier-vscode", "lokalise.i18n-ally"]
 }

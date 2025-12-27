@@ -18,11 +18,6 @@ export function getImgUrl(brand: BrandConfig, imageName: string) {
  * @returns
  */
 type NestedObject = Record<string, unknown>;
-export function loadDynamicComponent(
-  type: string,
-  mode: "client" | "suspense",
-) {
-  return dynamic<NestedObject>(() =>
-    import(`@/components/widgets/${type}/${mode}`).then((mod) => mod.default),
-  );
+export function loadDynamicComponent(type: string, mode: "client" | "suspense") {
+  return dynamic<NestedObject>(() => import(`@/components/widgets/${type}/${mode}`).then((mod) => mod.default));
 }

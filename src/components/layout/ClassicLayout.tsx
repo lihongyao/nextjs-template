@@ -4,11 +4,7 @@ import { useRouter } from "@/i18n/navigation";
 import Button from "../ui/Button";
 
 // src/components/layout/ClassicLayout.tsx
-export default function ClassicLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ClassicLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   return (
     <div className="min-h-screen">

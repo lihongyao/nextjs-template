@@ -7,12 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Routes } from "@/lib/routes";
 import { useBrandConfig } from "@/providers/brand.provider";
 
-export default function X2Dialog({
-  onClose,
-}: {
-  onClose?: () => void;
-  xxx: string;
-}) {
+export default function X2Dialog({ onClose }: { onClose?: () => void; xxx: string }) {
   const brand = useBrandConfig();
   const dialog = useDialog();
   const router = useRouter();

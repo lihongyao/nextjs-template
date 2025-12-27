@@ -22,22 +22,13 @@ export const CookieClient = {
    * @param expireDays 过期时间（天）
    * @param options 额外选项
    */
-  set(
-    key: string,
-    value: string | number,
-    expireDays = 1,
-    options?: CookieOptions,
-  ) {
+  set(key: string, value: string | number, expireDays = 1, options?: CookieOptions) {
     if (typeof window === "undefined") return; // SSR 忽略
     if (typeof value !== "string" && typeof value !== "number") return;
 
     const expires = new Date(Date.now() + expireDays * 24 * 60 * 60 * 1000);
 
-    const parts = [
-      `${encodeURIComponent(key)}=${encodeURIComponent(value)}`,
-      `expires=${expires.toUTCString()}`,
-      `path=${options?.path ?? "/"}`,
-    ];
+    const parts = [`${encodeURIComponent(key)}=${encodeURIComponent(value)}`, `expires=${expires.toUTCString()}`, `path=${options?.path ?? "/"}`];
 
     if (options?.secure) parts.push("Secure");
     if (options?.sameSite) parts.push(`SameSite=${options.sameSite}`);

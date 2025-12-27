@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  forwardRef,
-  type ReactNode,
-  useEffect,
-  useImperativeHandle,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { forwardRef, type ReactNode, useEffect, useImperativeHandle, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { cn } from "@/lib/class-helpers";
@@ -17,17 +9,9 @@ import React, { createContext, useContext } from "react";
 import { dialogRegistry } from "@/components/features/dialogs";
 
 /** 进入动画 */
-export type DialogEnterAnimation =
-  | "fade-in"
-  | "zoom-in"
-  | "slide-up-in"
-  | "slide-right-in";
+export type DialogEnterAnimation = "fade-in" | "zoom-in" | "slide-up-in" | "slide-right-in";
 /** 退出动画 */
-export type DialogExitAnimation =
-  | "fade-out"
-  | "zoom-out"
-  | "slide-up-out"
-  | "slide-right-out";
+export type DialogExitAnimation = "fade-out" | "zoom-out" | "slide-up-out" | "slide-right-out";
 
 /** Dialog 组件 props */
 interface DialogProps {
@@ -100,9 +84,7 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
   // 是否为受控组件（通过是否显式传入 open 判断）
   const isControlled = open !== undefined;
 
-  const dialogId = useRef(
-    `DIALOG_${Math.random().toString(36).slice(2).toUpperCase()}`,
-  );
+  const dialogId = useRef(`DIALOG_${Math.random().toString(36).slice(2).toUpperCase()}`);
   const autoDestroyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useImperativeHandle(ref, () => ({
@@ -124,10 +106,7 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
   useEffect(() => {
     if (!autoDestroy || !visible) return;
 
-    autoDestroyTimer.current = setTimeout(
-      () => setIsExiting(true),
-      autoDestroy * 1000,
-    );
+    autoDestroyTimer.current = setTimeout(() => setIsExiting(true), autoDestroy * 1000);
 
     return () => {
       if (autoDestroyTimer.current) {
@@ -168,21 +147,11 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
   const content = (
     <div data-name="dialog-root" className="fixed inset-0" style={{ zIndex }}>
       <div
-        className={cn(
-          "h-full w-full bg-black/70 backdrop-blur-xs flex justify-center items-center",
-          isExiting ? "fade-out" : "fade-in",
-          maskClassName,
-        )}
+        className={cn("h-full w-full bg-black/70 backdrop-blur-xs flex justify-center items-center", isExiting ? "fade-out" : "fade-in", maskClassName)}
         onClick={handleMaskClick}
         onAnimationEnd={handleAnimationEnd}
       >
-        <div
-          className={cn(
-            isExiting ? exitAnimation : enterAnimation,
-            contentClassName,
-          )}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <div className={cn(isExiting ? exitAnimation : enterAnimation, contentClassName)} onClick={(e) => e.stopPropagation()}>
           {children}
         </div>
       </div>
@@ -274,10 +243,7 @@ Dialog.close = (key?: string) => {
 
 export type DialogType = keyof typeof dialogRegistry;
 
-export type OpenDialogOptions<K extends DialogType = DialogType> = Omit<
-  DialogProps,
-  "open" | "children"
-> & {
+export type OpenDialogOptions<K extends DialogType = DialogType> = Omit<DialogProps, "open" | "children"> & {
   props?: Partial<React.ComponentProps<(typeof dialogRegistry)[K]>>;
 };
 
@@ -291,14 +257,8 @@ type DialogInstance = {
 };
 
 type DialogContextValue = {
-  open: <K extends DialogType>(
-    type: K,
-    options?: OpenDialogOptions<K>,
-  ) => DialogInstance;
-  queue: <K extends DialogType>(
-    type: K,
-    options?: OpenDialogOptions<K>,
-  ) => Promise<void>;
+  open: <K extends DialogType>(type: K, options?: OpenDialogOptions<K>) => DialogInstance;
+  queue: <K extends DialogType>(type: K, options?: OpenDialogOptions<K>) => Promise<void>;
   closeTop: () => void;
   close: (type?: DialogType) => void;
 };
@@ -307,8 +267,7 @@ const DialogContext = createContext<DialogContextValue | null>(null);
 
 export const useDialog = () => {
   const ctx = useContext(DialogContext);
-  if (!ctx)
-    throw new Error("useDialogContext must be used within DialogProvider");
+  if (!ctx) throw new Error("useDialogContext must be used within DialogProvider");
   return ctx;
 };
 
@@ -342,9 +301,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const updateDialogs = (
-    updater: (prev: DialogInstance[]) => DialogInstance[],
-  ) => {
+  const updateDialogs = (updater: (prev: DialogInstance[]) => DialogInstance[]) => {
     setDialogs((prev) => {
       const next = updater(prev);
       dialogsRef.current = next;
@@ -352,16 +309,8 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const open = <K extends DialogType>(
-    type: K,
-    options: OpenDialogOptions<K> = {},
-  ): DialogInstance => {
-    const {
-      props = {} as OpenDialogOptions<K>["props"],
-      onClose,
-      closeOnPopstate = true,
-      ...dialogProps
-    } = options;
+  const open = <K extends DialogType>(type: K, options: OpenDialogOptions<K> = {}): DialogInstance => {
+    const { props = {} as OpenDialogOptions<K>["props"], onClose, closeOnPopstate = true, ...dialogProps } = options;
 
     const Component = dialogRegistry[type];
     if (!Component) throw new Error(`Dialog "${type}" is not registered`);
@@ -399,10 +348,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
             // 通过 controlled open 触发退出动画
             return {
               ...d,
-              content: React.cloneElement(
-                d.content as React.ReactElement<{ open?: boolean }>,
-                { open: false },
-              ),
+              content: React.cloneElement(d.content as React.ReactElement<{ open?: boolean }>, { open: false }),
             };
           }
           return d;

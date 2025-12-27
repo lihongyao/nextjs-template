@@ -10,11 +10,7 @@ function FrozenRouter({ children }: { children: ReactNode }) {
   const frozen = useRef(context).current;
 
   if (!frozen) return <>{children}</>;
-  return (
-    <LayoutRouterContext.Provider value={frozen}>
-      {children}
-    </LayoutRouterContext.Provider>
-  );
+  return <LayoutRouterContext.Provider value={frozen}>{children}</LayoutRouterContext.Provider>;
 }
 
 const PageTransitionEffect = ({ children }: { children: ReactNode }) => {
@@ -30,10 +26,7 @@ const PageTransitionEffect = ({ children }: { children: ReactNode }) => {
       prevPathRef.current = pathname;
       return;
     }
-    setIsBack(
-      window.history.state?.idx <
-        (prevPathRef.current ? window.history.state?.idx : 0),
-    );
+    setIsBack(window.history.state?.idx < (prevPathRef.current ? window.history.state?.idx : 0));
     prevPathRef.current = pathname;
   }, [pathname]);
 
@@ -49,13 +42,9 @@ const PageTransitionEffect = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <div
-      style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}
-    >
+    <div style={{ position: "relative", minHeight: "100vh", overflow: "hidden" }}>
       {/* 底层页面 */}
-      <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>
-        {isBack && prevChildren}
-      </div>
+      <div style={{ position: "absolute", inset: 0, zIndex: 1 }}>{isBack && prevChildren}</div>
 
       <AnimatePresence mode="popLayout">
         <motion.div

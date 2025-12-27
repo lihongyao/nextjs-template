@@ -1,16 +1,7 @@
 "use client";
 
 import { LRUCache } from "lru-cache";
-import {
-  type CSSProperties,
-  type KeyboardEvent,
-  type MouseEvent,
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type CSSProperties, type KeyboardEvent, type MouseEvent, type ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { SVG_PATH_NAMES } from "./svgPath_all";
 
 /* ==================== 缓存配置 ==================== */
@@ -84,14 +75,7 @@ function sanitizeSvg(svg: string): string {
 
 /* ==================== 颜色处理 ==================== */
 
-const COLOR_ATTRS = [
-  "fill",
-  "stroke",
-  "stop-color",
-  "flood-color",
-  "lighting-color",
-  "color",
-];
+const COLOR_ATTRS = ["fill", "stroke", "stop-color", "flood-color", "lighting-color", "color"];
 const PRESERVE_COLORS = ["none", "transparent", "inherit", "currentcolor"];
 
 /** 判断当前颜色是否应保留，不被 currentColor 覆盖 */
@@ -103,18 +87,12 @@ function shouldPreserveColor(color: string) {
 /** 替换属性颜色为 currentColor（保留特殊颜色） */
 function replaceAttrColor(svg: string, attr: string) {
   const reg = new RegExp(`${attr}=(["'])([^"']+)\\1`, "gi");
-  return svg.replace(reg, (m, q, val) =>
-    shouldPreserveColor(val) ? m : `${attr}=${q}currentColor${q}`,
-  );
+  return svg.replace(reg, (m, q, val) => (shouldPreserveColor(val) ? m : `${attr}=${q}currentColor${q}`));
 }
 
 /** 替换 <style> 内的颜色为 currentColor */
 function replaceCssColors(css: string) {
-  return css.replace(
-    /(fill|stroke|stop-color|flood-color|lighting-color|color)\s*:\s*([^;}\s]+)/gi,
-    (m, _p, val) =>
-      shouldPreserveColor(val) ? m : m.replace(val, "currentColor"),
-  );
+  return css.replace(/(fill|stroke|stop-color|flood-color|lighting-color|color)\s*:\s*([^;}\s]+)/gi, (m, _p, val) => (shouldPreserveColor(val) ? m : m.replace(val, "currentColor")));
 }
 
 /** 高级模式：按 colors[] 顺序覆盖 SVG 的 fill/stroke */
@@ -122,13 +100,10 @@ function applyColorsByList(svg: string, colors: string[]): string {
   if (!svg || !colors.length) return svg;
 
   let idx = 0;
-  return svg.replace(
-    /\b(fill|stroke)\s*=\s*(['"])([^"']+)\2/gi,
-    (match, attr, quote, val) => {
-      if (shouldPreserveColor(val) || idx >= colors.length) return match;
-      return `${attr}=${quote}${colors[idx++]}${quote}`;
-    },
-  );
+  return svg.replace(/\b(fill|stroke)\s*=\s*(['"])([^"']+)\2/gi, (match, attr, quote, val) => {
+    if (shouldPreserveColor(val) || idx >= colors.length) return match;
+    return `${attr}=${quote}${colors[idx++]}${quote}`;
+  });
 }
 
 /* ==================== 尺寸处理 ==================== */
@@ -155,10 +130,7 @@ function normalizeSvg(svg: string, hasExplicitSize: boolean) {
 
   // 如果外层显式设置尺寸，则 width/height 100%
   if (hasExplicitSize) {
-    svg = svg.replace(
-      "<svg",
-      '<svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet"',
-    );
+    svg = svg.replace("<svg", '<svg width="100%" height="100%" preserveAspectRatio="xMidYMid meet"');
   }
 
   return svg;
@@ -166,17 +138,7 @@ function normalizeSvg(svg: string, hasExplicitSize: boolean) {
 
 /* ==================== Icon 组件 ==================== */
 
-export default function Icon({
-  name,
-  src,
-  className,
-  wrapperClass,
-  style,
-  color,
-  fallback,
-  colors,
-  onClick,
-}: IconProps) {
+export default function Icon({ name, src, className, wrapperClass, style, color, fallback, colors, onClick }: IconProps) {
   const [svg, setSvg] = useState("");
   const [error, setError] = useState(false);
 
@@ -202,16 +164,11 @@ export default function Icon({
           COLOR_ATTRS.forEach((attr) => {
             out = replaceAttrColor(out, attr);
           });
-          out = out.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (m, css) =>
-            m.replace(css, replaceCssColors(css)),
-          );
+          out = out.replace(/<style[^>]*>([\s\S]*?)<\/style>/gi, (m, css) => m.replace(css, replaceCssColors(css)));
         }
       }
 
-      out = normalizeSvg(
-        out,
-        hasSizeClass(className) || !!style?.width || !!style?.height,
-      );
+      out = normalizeSvg(out, hasSizeClass(className) || !!style?.width || !!style?.height);
       return out;
     },
     [className, style, color, colors],
@@ -237,9 +194,7 @@ export default function Icon({
         if (!p) {
           p = fetch(iconPath, {
             mode: /^https?:\/\//i.test(iconPath) ? "cors" : "same-origin",
-            credentials: /^https?:\/\//i.test(iconPath)
-              ? "omit"
-              : "same-origin",
+            credentials: /^https?:\/\//i.test(iconPath) ? "omit" : "same-origin",
           }).then((r) => {
             if (!r.ok) throw new Error(`HTTP ${r.status}`);
             return r.text();
@@ -303,21 +258,11 @@ export default function Icon({
   const isInvalid = !iconPath || error || !svg;
 
   return (
-    <div
-      className={`inline-flex items-center justify-center ${wrapperClass ?? ""}`}
-      onClick={handleClick}
-    >
+    <div className={`inline-flex items-center justify-center ${wrapperClass ?? ""}`} onClick={handleClick}>
       {isInvalid ? (
         (fallback ?? <span className="text-red-500">⚠</span>)
       ) : (
-        <div
-          className={className}
-          style={finalStyle}
-          dangerouslySetInnerHTML={{ __html: svg }}
-          role={onClick ? "button" : undefined}
-          tabIndex={onClick ? 0 : undefined}
-          onKeyDown={handleKeyDown}
-        />
+        <div className={className} style={finalStyle} dangerouslySetInnerHTML={{ __html: svg }} role={onClick ? "button" : undefined} tabIndex={onClick ? 0 : undefined} onKeyDown={handleKeyDown} />
       )}
     </div>
   );

@@ -35,21 +35,13 @@ export default function RouteModalRenderer() {
     // fallback: 移除 modal
     const newPathSegments = pathSegments.filter((s) => !s.startsWith("modal-"));
     const basePath = `/${newPathSegments.join("/")}`;
-    const nextUrl = searchParams.toString()
-      ? `${basePath}?${searchParams.toString()}`
-      : basePath;
+    const nextUrl = searchParams.toString() ? `${basePath}?${searchParams.toString()}` : basePath;
 
     router.replace(nextUrl, { scroll: false });
   }, [ModalComponent, router, pathSegments, searchParams]);
 
   return (
-    <div
-      data-name="RouteModalRenderer"
-      className={cn(
-        "w-screen h-screen fixed inset-0 justify-center items-center bg-black/70 backdrop-blur-xs",
-        ModalComponent ? "flex" : "hidden",
-      )}
-    >
+    <div data-name="RouteModalRenderer" className={cn("w-screen h-screen fixed inset-0 justify-center items-center bg-black/70 backdrop-blur-xs", ModalComponent ? "flex" : "hidden")}>
       {ModalComponent && <ModalComponent onCloseAction={onCloseAction} />}
     </div>
   );

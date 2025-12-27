@@ -20,10 +20,7 @@ export default function X1Dialog({ message, onClose }: X1DialogProps) {
   const onClose3 = () => dialog.close("X1Dialog");
 
   return (
-    <div
-      data-name="X1Dialog"
-      className="rounded bg-white p-4 shadow-lg  w-full h-full"
-    >
+    <div data-name="X1Dialog" className="rounded bg-white p-4 shadow-lg  w-full h-full">
       <h2 className="text-lg font-bold">X1 Dialog</h2>
       <p>{message || "这是 X1 弹框内容"}</p>
       <p>

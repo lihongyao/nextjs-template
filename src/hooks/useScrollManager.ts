@@ -43,11 +43,7 @@ function matchAny(pathname: string, regexList: RegExp[]) {
 }
 
 /** 判断是否允许 restore */
-function canRestoreFrom(
-  pathname: string,
-  fromPath: string | null,
-  restoreFrom: Record<string, string[]> | undefined,
-) {
+function canRestoreFrom(pathname: string, fromPath: string | null, restoreFrom: Record<string, string[]> | undefined) {
   if (!fromPath || !restoreFrom) return false;
 
   for (const [toPattern, fromPatterns] of Object.entries(restoreFrom)) {
@@ -63,21 +59,10 @@ export function useScrollManager(options: UseScrollManagerOptions = {}) {
   const pathname = usePathname();
   const prevPathRef = useRef<string | null>(null);
 
-  const {
-    defaultScrollToTop = false,
-    overrideScrollRegex = [],
-    restoreFrom,
-    behavior = "auto",
-    maxCacheLength = 50,
-    threshold = 10,
-    restoreDelay = 0,
-  } = options;
+  const { defaultScrollToTop = false, overrideScrollRegex = [], restoreFrom, behavior = "auto", maxCacheLength = 50, threshold = 10, restoreDelay = 0 } = options;
 
   /** 初始化 override 正则 */
-  const overrideRegexList = useMemo(
-    () => overrideScrollRegex.map((r) => new RegExp(r)),
-    [overrideScrollRegex],
-  );
+  const overrideRegexList = useMemo(() => overrideScrollRegex.map((r) => new RegExp(r)), [overrideScrollRegex]);
 
   /** 离开页面 → 缓存滚动位置 */
   useEffect(() => {
@@ -133,12 +118,5 @@ export function useScrollManager(options: UseScrollManagerOptions = {}) {
 
     // 更新 prevPathRef，供下次判断来源
     prevPathRef.current = pathname;
-  }, [
-    pathname,
-    defaultScrollToTop,
-    overrideRegexList,
-    restoreFrom,
-    behavior,
-    restoreDelay,
-  ]);
+  }, [pathname, defaultScrollToTop, overrideRegexList, restoreFrom, behavior, restoreDelay]);
 }

@@ -24,13 +24,7 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default async function LocaleLayout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: Promise<{ locale: string }>;
-}) {
+export default async function LocaleLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale: string }> }) {
   // 获取当前语言
   const { locale } = await params;
 
@@ -50,27 +44,14 @@ export default async function LocaleLayout({
   const brand = await getBrandConfigSSR();
 
   return (
-    <html
-      lang={locale}
-      data-theme={brand.theme}
-      data-skin={brand.skin}
-      suppressHydrationWarning
-    >
+    <html lang={locale} data-theme={brand.theme} data-skin={brand.skin} suppressHydrationWarning>
       <head>
-        <meta
-          name="viewport"
-          content="width=device-width,initial-scale=1.0,viewport-fit=cover,minimum-scale=1,maximum-scale=1,user-scalable=no"
-        />
+        <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,minimum-scale=1,maximum-scale=1,user-scalable=no" />
         {/* SSR 加载主题、皮肤、覆盖文件 */}
         <link rel="stylesheet" href={`/styles/tokens/index.css`} />
         <link rel="stylesheet" href={`/styles/themes/${brand.theme}.css`} />
         <link rel="stylesheet" href={`/styles/skins/${brand.skin}.css`} />
-        {brand.overrides && (
-          <link
-            rel="stylesheet"
-            href={`/styles/overrides/${brand.brandName}.css`}
-          />
-        )}
+        {brand.overrides && <link rel="stylesheet" href={`/styles/overrides/${brand.brandName}.css`} />}
       </head>
       <body>
         <ViewTransition name="page" enter="page-enter" exit="page-exit">

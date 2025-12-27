@@ -71,16 +71,10 @@ function convertCssVars() {
       else if (v.en.includes("shadow")) twPrefix = "shadow-";
       else if (v.en.includes("text")) twPrefix = "text-";
       else if (v.en.includes("radius")) twPrefix = "radius-";
-      else if (
-        v.en.includes("spacing") ||
-        v.en.includes("margin") ||
-        v.en.includes("padding")
-      )
-        twPrefix = "spacing-";
+      else if (v.en.includes("spacing") || v.en.includes("margin") || v.en.includes("padding")) twPrefix = "spacing-";
       else if (v.en.includes("z")) twPrefix = "z-";
       else if (v.en.includes("blur")) twPrefix = "blur-";
-      else if (v.en.includes("transition") || v.en.includes("animate"))
-        twPrefix = "transition-";
+      else if (v.en.includes("transition") || v.en.includes("animate")) twPrefix = "transition-";
       else twPrefix = "color-";
 
       output += `  --${twPrefix}${v.en}: var(--${v.en}); /* ${v.original} */\n`;
@@ -94,9 +88,7 @@ function convertCssVars() {
   console.log(`✅ 转换完成！`);
   console.log(`输入文件: ${path.basename(INPUT_FILE)}`);
   console.log(`输出文件: ${path.basename(OUTPUT_FILE)}`);
-  console.log(
-    `Tailwind 变量块: ${generateTailwind ? "✅ 已生成" : "❌ 未生成"}`,
-  );
+  console.log(`Tailwind 变量块: ${generateTailwind ? "✅ 已生成" : "❌ 未生成"}`);
 }
 
 // 执行

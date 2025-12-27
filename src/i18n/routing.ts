@@ -6,9 +6,7 @@
 import { defineRouting } from "next-intl/routing";
 import type { BrandConfig } from "@/configs/brands/types";
 
-const module = await import(
-  `@/configs/brands/${process.env.NEXT_PUBLIC_BRAND_NAME}.ts`
-);
+const module = await import(`@/configs/brands/${process.env.NEXT_PUBLIC_BRAND_NAME}.ts`);
 const config = module.default as BrandConfig;
 
 // -- 定义支持的语言环境和默认语言环境
