@@ -12,6 +12,7 @@ export const Routes = {
   Motion: "/motion",
   MotionSub: "/motion/sub",
   ModalProfile: "/modal-profile",
+  CdnImage: "/cdn-image",
 } as const;
 
 export type Route = keyof typeof Routes;

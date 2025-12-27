@@ -1,4 +1,3 @@
-// src/components/features/dialogs/X1Dialog.tsx
 "use client";
 
 import Button from "@/components/ui/Button";
@@ -27,10 +26,10 @@ export default function X1Dialog({ message, onClose }: X1DialogProps) {
         {brand.theme} - {brand.skin}
       </p>
 
-      <div className="flex gap-4">
-        <Button onClick={onClose1}>关闭弹框m1</Button>
-        <Button onClick={onClose2}>关闭弹框m2</Button>
-        <Button onClick={onClose3}>关闭弹框m3</Button>
+      <div className="flex gap-4 flex-wrap">
+        <Button onClick={onClose1}>关闭m1</Button>
+        <Button onClick={onClose2}>关闭m2</Button>
+        <Button onClick={onClose3}>关闭m3</Button>
         <Button
           onClick={() => {
             dialog.open("X2Dialog", {

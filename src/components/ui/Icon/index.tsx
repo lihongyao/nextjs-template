@@ -1,3 +1,4 @@
+// src/components/ui/Icon/index.tsx
 "use client";
 
 import { LRUCache } from "lru-cache";
@@ -26,7 +27,7 @@ export type IconProps = {
   /** 远程 SVG 文件 URL，优先级高于 name */
   src?: string;
 
-  /** 🔥 高级模式：按 SVG 路径顺序覆盖颜色，忽略 currentColor */
+  /** 按 SVG 路径顺序覆盖颜色，忽略 currentColor */
   colors?: string[];
 
   /** 用于内部 <div> 的 className，可控制尺寸/颜色 */
@@ -154,7 +155,7 @@ export default function Icon({ name, src, className, wrapperClass, style, color,
     (raw: string) => {
       let out = sanitizeSvg(raw);
 
-      // 🔥 优先 colors[] 高级模式
+      // 优先 colors
       if (colors?.length) {
         out = applyColorsByList(out, colors);
       } else {

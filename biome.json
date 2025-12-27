@@ -29,6 +29,9 @@
         "noExplicitAny": "warn",
         "noDocumentCookie": "off"
       },
+      "performance": {
+        "noImgElement": "off"
+      },
       "style": {
         "noNonNullAssertion": "off"
       },

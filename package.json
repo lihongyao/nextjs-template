@@ -16,7 +16,9 @@
     "i18n:json": "tsx scripts/excel2json/index.ts",
     "convert:theme": "tsx scripts/convert-css-vars/index.js",
     "convert:theme-tw": "tsx scripts/convert-css-vars/index.js --tw",
-    "gen-figma-variables": "tsx scripts/gen-figma-variables/index.ts"
+    "gen-figma-variables": "tsx scripts/gen-figma-variables/index.ts",
+    "gen-svg-paths": "tsx scripts/gen-svg-paths/index.ts",
+    "gen-svg-paths-watch": "tsx scripts/gen-svg-paths/index.ts --watch"
   },
   "config": {
     "commitizen": {

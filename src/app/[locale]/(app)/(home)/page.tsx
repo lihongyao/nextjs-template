@@ -17,6 +17,7 @@ export default function HomePage() {
       <Button onClick={() => router.push(Routes.ModalProfile)}>路由弹框</Button>
       <Button onClick={() => router.push(Routes.Dialog)}>普通弹框</Button>
       <Button onClick={() => router.push(Routes.Motion)}>Motion</Button>
+      <Button onClick={() => router.push(Routes.CdnImage)}>CDN图片参数优化</Button>
     </div>
   );
 }

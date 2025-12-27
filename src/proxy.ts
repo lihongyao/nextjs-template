@@ -17,9 +17,6 @@ export function proxy(request: NextRequest) {
     intlResponse.headers.set("x-middleware-rewrite", rewriteTarget.toString());
   }
 
-  // 设置 X-Path 头
-  intlResponse.headers.set("X-Path", request.nextUrl.pathname);
-
   return intlResponse;
 }
 
