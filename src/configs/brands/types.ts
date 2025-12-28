@@ -1,9 +1,14 @@
 // src/configs/brands/types.ts
 
+// -- 品牌
 export type BrandName = "afun" | "bfun";
+// -- 主题
 export type Theme = "classic" | "modern";
+// -- 皮肤
 export type Skin = "dark" | "light";
+// -- 套图
 export type Series = "default";
+
 export type Locale = {
   /** 语言描述 */
   label: string;

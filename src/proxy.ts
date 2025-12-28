@@ -1,69 +1,98 @@
 // src/proxy.ts
-import type { NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 
+/**
+ * next-intl middleware
+ * 只负责 locale 相关的 rewrite / redirect
+ */
 const intlMiddleware = createMiddleware(routing);
 
-// -- 路由前缀
+/**
+ * modal 路由前缀
+ * e.g. /user/modal-login
+ */
 const MODAL_PREFIX = "modal-";
 
 export function proxy(request: NextRequest) {
-  // 1️⃣ 先处理国际化
-  const intlResponse = intlMiddleware(request);
-  // 2️⃣ modal rewrite
-  const rewriteTarget = modalRewriteUrl(request);
-  if (rewriteTarget) {
-    intlResponse.headers.set("x-middleware-rewrite", rewriteTarget.toString());
+  /**
+   * 1️⃣ 先处理 modal rewrite（业务语义）
+   *    - /user/modal-login
+   *    → /user?modal=modal-login
+   */
+  const modalRewriteUrl = getModalRewriteUrl(request);
+  if (modalRewriteUrl) {
+    return NextResponse.rewrite(modalRewriteUrl);
   }
 
-  return intlResponse;
+  /**
+   * 2️⃣ 再交给 next-intl 统一处理语言前缀
+   *    - /user
+   *    → /zh/user
+   */
+  return intlMiddleware(request);
 }
 
-function modalRewriteUrl(request: NextRequest) {
-  const { pathname, searchParams } = request.nextUrl;
+/**
+ * 根据 pathname 判断是否是 modal 路由
+ * 命中则返回 rewrite URL，否则返回 null
+ */
+function getModalRewriteUrl(request: NextRequest): URL | null {
+  const { pathname } = request.nextUrl;
 
-  if (!pathname.includes(MODAL_PREFIX)) {
-    return null;
-  }
-
+  /**
+   * 拆分路径段
+   * /zh/user/modal-login → ["zh", "user", "modal-login"]
+   */
   const segments = pathname.split("/").filter(Boolean);
+
+  /**
+   * 找到 modal 段
+   */
   const modalIndex = segments.findIndex((segment) => segment.startsWith(MODAL_PREFIX));
+
   if (modalIndex === -1) {
     return null;
   }
 
-  const modalPathname = segments[modalIndex];
-  const basePaths = segments.slice(0, modalIndex);
+  /**
+   * modal 名称
+   * modal-login
+   */
+  const modal = segments[modalIndex];
 
-  const locales = routing.locales;
-  const defaultLocale = routing.defaultLocale;
+  /**
+   * modal 之前的路径作为 base pathname
+   * ["zh", "user"]
+   */
+  const baseSegments = segments.slice(0, modalIndex);
 
-  // 检查路径是否包含语言前缀，则加上默认语言
-  const hasLocalePrefix = basePaths.length > 0 && locales.includes(basePaths[0]);
-  if (!hasLocalePrefix) {
-    basePaths.unshift(defaultLocale);
-  }
+  /**
+   * 构造 rewrite URL
+   */
+  const url = request.nextUrl.clone();
 
-  const basePath = `/${basePaths.join("/")}`;
-  // 克隆请求的URL对象，在其基础上修改
-  const rewriteUrl = request.nextUrl.clone();
-  // 设置基础路径，确保没有多余的斜杠
-  rewriteUrl.pathname = basePath.replace(/\/{2,}/g, "/");
+  /**
+   * ⚠️ 不处理 locale
+   * locale 是否存在 / 是否需要补
+   * 完全交给 next-intl middleware
+   */
+  url.pathname = baseSegments.length ? `/${baseSegments.join("/")}` : "/";
 
-  const nextParams = new URLSearchParams(searchParams.toString());
-  // 添加或覆盖 modal 参数（例如 "?modal=modal-login"）
-  nextParams.set("modal", modalPathname);
-  // 将查询参数赋值给 URL
-  rewriteUrl.search = nextParams.toString() ? `?${nextParams.toString()}` : "";
-  // 返回新的 URL（Next.js 会用它来执行 rewrite）
-  console.log("rewriteUrl >>> ", rewriteUrl);
-  return rewriteUrl;
+  /**
+   * 通过 query 参数传递 modal 信息
+   */
+  url.searchParams.set("modal", modal);
+
+  return url;
 }
 
+/**
+ * middleware 匹配规则
+ * - 排除 api / trpc / _next / _vercel
+ * - 排除静态资源
+ */
 export const config = {
-  // Match all pathnames except for
-  // - … if they start with `/api`, `/trpc`, `/_next` or `/_vercel`
-  // - … the ones containing a dot (e.g. `favicon.ico`)
   matcher: "/((?!api|trpc|_next|_vercel|.*\\..*).*)",
 };
