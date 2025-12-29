@@ -107,6 +107,65 @@ export default function Demo() {
     });
   };
 
+  const openMuiltipleSameDialog = () => {
+    dialog.open("X1Dialog", {
+      multiple: false,
+      props: {
+        count: 100,
+        message: "哈哈哈哈",
+      },
+    });
+
+    setTimeout(() => {
+      dialog.open("X1Dialog", {
+        multiple: false,
+        props: (prev) => {
+          console.log(prev);
+          return {
+            message: "嘿嘿嘿嘿",
+            count: (prev?.count ?? 0) + 100,
+          };
+        },
+      });
+    }, 2000);
+
+    // setTimeout(() => {
+    //   dialog.open("X1Dialog", {
+    //     multiple: false,
+    //     props: {
+    //       count: 100,
+    //       message: "哈哈哈哈",
+    //     },
+    //   });
+    // }, 1000);
+
+    // setTimeout(() => {
+
+    //   // dialog.updateProps("X1Dialog", {
+    //   //   message: "嘿嘿嘿嘿",
+    //   //   count: 300,
+    //   // })
+
+    //   dialog.updateProps("X1Dialog", (prev) => {
+    //     console.log(prev);
+    //     return {
+    //       message: "嘿嘿嘿嘿",
+    //       count: (prev?.count ?? 0) + 100,
+    //     };
+    //   });
+    // }, 2000);
+
+    // setTimeout(() => {
+    //   dialog.updateProps("X1Dialog", (prev) => {
+    //     console.log(prev);
+    //     return {
+    //       message: "嘿嘿嘿嘿123",
+    //       count: (prev?.count ?? 0) + 100,
+    //     };
+    //   });
+    // }, 3000);
+  };
+
   return (
     <div className="flex gap-4 p-4 flex-wrap">
       <Button onClick={() => setOpen(true)}>组件调用(受控)</Button>
@@ -116,6 +175,7 @@ export default function Demo() {
       <Button onClick={openQueue}>queue dialogs</Button>
       <Button onClick={openStatic}>静态调用</Button>
       <Button onClick={check}>全局Dialog实例</Button>
+      <Button onClick={openMuiltipleSameDialog}>延迟弹相同弹框</Button>
       <Button
         onClick={() => {
           router.back();

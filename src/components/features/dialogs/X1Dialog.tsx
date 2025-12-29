@@ -6,10 +6,11 @@ import { useBrandConfig } from "@/providers/brand.provider";
 
 export interface X1DialogProps {
   message?: string;
+  count?: number;
   onClose?: () => void;
 }
 
-export default function X1Dialog({ message, onClose }: X1DialogProps) {
+export default function X1Dialog({ message, count, onClose }: X1DialogProps) {
   const dialog = useDialog();
 
   const brand = useBrandConfig();
@@ -22,6 +23,7 @@ export default function X1Dialog({ message, onClose }: X1DialogProps) {
     <div data-name="X1Dialog" className="rounded bg-white p-4 shadow-lg  w-full h-full">
       <h2 className="text-lg font-bold">X1 Dialog</h2>
       <p>{message || "这是 X1 弹框内容"}</p>
+      <p>count: {count || "-"}</p>
       <p>
         {brand.theme} - {brand.skin}
       </p>
