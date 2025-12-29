@@ -8,7 +8,7 @@ export default {
   getData: async (payload: GetDataReq) => {
     console.log("footer payload >>> ", payload);
     return {
-      data: { text: "Footer Component" },
+      data: { component: payload.component, text: "Footer Component" },
     };
   },
 } satisfies WidgetConfig<FooterProps>;

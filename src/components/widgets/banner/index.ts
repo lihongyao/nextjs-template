@@ -10,7 +10,11 @@ export default {
   getData: async (payload: GetDataReq) => {
     console.log("banner payload >>> ", payload);
     return {
-      data: { title: "Banner Component", banners: ["A", "B", "C"] },
+      data: {
+        component: payload.component,
+        title: "Banner Component",
+        banners: ["A", "B", "C"],
+      },
     };
   },
 } satisfies WidgetConfig<BannerProps>;

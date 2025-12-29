@@ -10,7 +10,7 @@ export default {
   getData: async (payload: GetDataReq) => {
     console.log("card payload >>> ", payload);
     return {
-      data: { name: "Card Component", list: [1, 2, 3, 4] },
+      data: { component: payload.component, name: "Card Component", list: [1, 2, 3, 4] },
     };
   },
 } satisfies WidgetConfig<CardProps>;
