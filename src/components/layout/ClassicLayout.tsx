@@ -7,7 +7,7 @@ import Button from "../ui/Button";
 export default function ClassicLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   return (
-    <div className="min-h-screen">
+    <div className="min-h-dvh">
       <header className="h-14 flex items-center border-b px-(--card-padding) border-(--header-border-color)">
         <Button
           onClick={() => {
