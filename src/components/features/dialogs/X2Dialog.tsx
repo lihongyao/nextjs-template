@@ -7,7 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Routes } from "@/lib/routes";
 import { useBrandConfig } from "@/providers/brand.provider";
 
-export default function X2Dialog({ onClose }: { onClose?: () => void }) {
+export default function X2Dialog({ closeDialog }: { closeDialog?: () => void }) {
   const brand = useBrandConfig();
   const dialog = useDialog();
   const router = useRouter();
@@ -18,25 +18,27 @@ export default function X2Dialog({ onClose }: { onClose?: () => void }) {
       <p>
         {brand.brandName} - {brand.skin}
       </p>
-      <Button
-        onClick={() => {
-          dialog.open("X3Dialog", {
-            onClose() {
-              console.log("X3 closed");
-            },
-          });
-        }}
-      >
-        打开X3
-      </Button>
-      <Button
-        onClick={() => {
-          onClose?.();
-          router.push(Routes.Motion);
-        }}
-      >
-        跳转其他页面
-      </Button>
+      <div className="flex items-center gap-4">
+        <Button
+          onClick={() => {
+            dialog.open("X3Dialog", {
+              onAfterClose() {
+                console.log("X3 after closed");
+              },
+            });
+          }}
+        >
+          打开X3
+        </Button>
+        <Button
+          onClick={() => {
+            dialog.close().then(() => router.push(Routes.Motion));
+          }}
+        >
+          跳转其他页面
+        </Button>
+        <Button onClick={() => router.back()}>返回</Button>
+      </div>
     </div>
   );
 }

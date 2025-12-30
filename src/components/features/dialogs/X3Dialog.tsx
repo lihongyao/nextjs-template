@@ -4,13 +4,20 @@
 import Button from "@/components/ui/Button";
 import { useDialog } from "@/components/ui/Dialog";
 
-export default function X2Dialog() {
+export default function X2Dialog({ closeDialog }: { closeDialog?: () => void }) {
   const dialog = useDialog();
   return (
     <div className="w-[400px] rounded bg-white p-6 shadow-lg">
       <h2 className="text-xl font-bold">X3 Dialog 标题</h2>
       <p>这是 X3 弹框内容</p>
-      <Button onClick={() => dialog.close("X3Dialog")}>关闭</Button>
+      <Button
+        onClick={() => {
+          closeDialog?.();
+          // dialog.close("X3Dialog");
+        }}
+      >
+        关闭
+      </Button>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import Button from "@/components/ui/Button";
 import { Dialog, type DialogType, useDialog } from "@/components/ui/Dialog";
 import { useRouter } from "@/i18n/navigation";
 import { Routes } from "@/lib/routes";
-import { check } from ".";
+import { openWithGlobalInstance } from ".";
 
 type DialogConfig = {
   type: DialogType; // 对应 dialogRegistry 的 key
@@ -23,21 +23,26 @@ export default function Demo() {
 
   const openX1 = () => {
     dialog.open("X1Dialog", {
-      props: { message: "Hello X1!" },
-      maskClosable: false,
-      contentClassName: "w-[90%]",
-      onClose: () => console.log("X1 closed"),
+      props: { message: "Hello X1!", count: 3.14 },
+      contentClassName: "w-[80%]",
+      onAfterClose: () => console.log("X1 closed"),
     });
   };
 
   const openX2 = () => {
-    dialog.open("X2Dialog", { onClose: () => console.log("X2 closed") });
+    dialog.open("X2Dialog", {
+      onAfterClose() {
+        console.log("X2 closed");
+      },
+    });
   };
 
   const openX2AutoClose = () => {
     const x = dialog.open("X2Dialog", {
       autoDestroy: 2,
-      onClose: () => console.log("X2 closed"),
+      onAfterClose() {
+        console.log("X2 closed");
+      },
     });
     setTimeout(() => {
       // x.requestClose();
@@ -49,10 +54,24 @@ export default function Demo() {
   const openQueue = async () => {
     await dialog.queue("X1Dialog", {
       props: { message: "Hello X1!" },
-      onClose: () => console.log("X1 closed"),
+      onAfterClose: () => console.log("X1 closed"),
     });
     await dialog.queue("X2Dialog", {
-      onClose: () => console.log("X2 closed"),
+      onAfterClose: () => console.log("X2 closed"),
+    });
+  };
+
+  const openStatic = () => {
+    Dialog.open({
+      maskClosable: true,
+      autoDestroy: 2,
+      content: (
+        <div className="p-10 bg-white rounded-md flex flex-col justify-center gap-4 items-center">
+          <div>这是弹框内容</div>
+          <Button onClick={() => Dialog.close()}>关闭</Button>
+        </div>
+      ),
+      onAfterClose: () => console.log("static open dialog closed"),
     });
   };
 
@@ -66,7 +85,7 @@ export default function Demo() {
           autoDestroy: item.autoDestroy,
           maskClassName: item.maskClassName,
           contentClassName: item.contentClassName,
-          onClose: () => console.log(`${item.type} closed`),
+          onAfterClose: () => console.log(`${item.type} closed`),
         });
       }
     }, 0);
@@ -88,25 +107,6 @@ export default function Demo() {
     }
   }, []);
 
-  const openStatic = () => {
-    Dialog.open({
-      maskClosable: true,
-      content: (
-        <div className="p-10 bg-white rounded-md flex flex-col justify-center gap-4 items-center">
-          <div>这是弹框内容</div>
-          <Button
-            onClick={() => {
-              Dialog.close();
-            }}
-          >
-            关闭
-          </Button>
-        </div>
-      ),
-      onClose: () => console.log("closed"),
-    });
-  };
-
   const openMuiltipleSameDialog = () => {
     dialog.open("X1Dialog", {
       multiple: false,
@@ -114,46 +114,52 @@ export default function Demo() {
         count: 100,
         message: "哈哈哈哈",
       },
+      onAfterClose() {
+        console.log("X1 closed");
+      },
     });
-
-    setTimeout(() => {
-      dialog.open("X1Dialog", {
-        multiple: false,
-        props: (prev) => {
-          console.log(prev);
-          return {
-            message: "嘿嘿嘿嘿",
-            count: (prev?.count ?? 0) + 100,
-          };
-        },
-      });
-    }, 2000);
 
     // setTimeout(() => {
     //   dialog.open("X1Dialog", {
     //     multiple: false,
+    //     onAfterClose() {
+    //       console.log("X1 closed!");
+    //     },
+    //     props: (prev) => {
+    //       console.log(prev);
+    //       return {
+    //         message: "嘿嘿嘿嘿",
+    //         count: (prev?.count ?? 0) + 100,
+    //       };
+    //     },
+    //   });
+    // }, 2000);
+
+    // setTimeout(() => {
+    //   dialog.open("X1Dialog", {
+    //     multiple: true,
     //     props: {
     //       count: 100,
     //       message: "哈哈哈哈",
     //     },
+    //     onAfterClose() {
+    //       console.log("X1 closed!");
+    //     },
     //   });
     // }, 1000);
 
-    // setTimeout(() => {
-
-    //   // dialog.updateProps("X1Dialog", {
-    //   //   message: "嘿嘿嘿嘿",
-    //   //   count: 300,
-    //   // })
-
-    //   dialog.updateProps("X1Dialog", (prev) => {
-    //     console.log(prev);
-    //     return {
-    //       message: "嘿嘿嘿嘿",
-    //       count: (prev?.count ?? 0) + 100,
-    //     };
-    //   });
-    // }, 2000);
+    setTimeout(() => {
+      // dialog.updateProps("X1Dialog", {
+      //   count: 300,
+      // })
+      // dialog.updateProps("X1Dialog", (prev) => {
+      //   console.log(prev);
+      //   return {
+      //     message: "啦啦啦啦",
+      //     count: (prev?.count ?? 0) + 100,
+      //   };
+      // });
+    }, 2000);
 
     // setTimeout(() => {
     //   dialog.updateProps("X1Dialog", (prev) => {
@@ -174,37 +180,30 @@ export default function Demo() {
       <Button onClick={openX2AutoClose}>openX2AutoClose</Button>
       <Button onClick={openQueue}>queue dialogs</Button>
       <Button onClick={openStatic}>静态调用</Button>
-      <Button onClick={check}>全局Dialog实例</Button>
+      <Button onClick={openWithGlobalInstance}>全局Dialog实例</Button>
       <Button onClick={openMuiltipleSameDialog}>延迟弹相同弹框</Button>
       <Button
         onClick={() => {
           router.back();
-          // dialog.open("X1Dialog", {
-          //   closeOnPopstate: false,
-          // });
-          Dialog.open({
+          dialog.open("X2Dialog", {
             closeOnPopstate: false,
-            content: (
-              <div className="p-10 bg-white rounded-md flex flex-col justify-center gap-4 items-center">
-                <div>这是弹框内容</div>
-                <Button
-                  onClick={() => {
-                    Dialog.close();
-                  }}
-                >
-                  关闭
-                </Button>
-              </div>
-            ),
-            onClose: () => console.log("closed"),
           });
         }}
       >
         后退时是否自动关闭
       </Button>
 
-      {/* 组件调用 */}
-      <Dialog open={open} onClose={() => setOpen(false)} maskClosable>
+      {/* 组件调用(受控) */}
+      <Dialog
+        open={open}
+        onClose={() => {
+          console.log("close");
+          setOpen(false);
+        }}
+        onAfterClose={() => {
+          console.log("onAfterClose");
+        }}
+      >
         <div className="p-5 w-[80%] flex flex-col justify-center gap-4 bg-white rounded-md items-center min-w-[300px] ">
           <div>这是弹框内容</div>
           <div className="flex gap-4 items-center">
