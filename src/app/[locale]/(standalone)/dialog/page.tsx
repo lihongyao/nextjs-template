@@ -119,21 +119,21 @@ export default function Demo() {
       },
     });
 
-    // setTimeout(() => {
-    //   dialog.open("X1Dialog", {
-    //     multiple: false,
-    //     onAfterClose() {
-    //       console.log("X1 closed!");
-    //     },
-    //     props: (prev) => {
-    //       console.log(prev);
-    //       return {
-    //         message: "嘿嘿嘿嘿",
-    //         count: (prev?.count ?? 0) + 100,
-    //       };
-    //     },
-    //   });
-    // }, 2000);
+    setTimeout(() => {
+      dialog.open("X1Dialog", {
+        multiple: false,
+        onAfterClose() {
+          console.log("X1 closed!");
+        },
+        props: (prev) => {
+          console.log(prev);
+          return {
+            message: "嘿嘿嘿嘿",
+            count: (prev?.count ?? 0) + 100,
+          };
+        },
+      });
+    }, 2000);
 
     // setTimeout(() => {
     //   dialog.open("X1Dialog", {

@@ -322,7 +322,9 @@ export type DialogInstance<K extends DialogType = DialogType> = {
 export type DialogContextValue = {
   open: <K extends DialogType>(
     type: K,
-    ...args: keyof PropsOf<K> extends never ? [options?: OpenDialogTypeOptions & { props?: PropsOf<K> }] : [options: OpenDialogTypeOptions & { props: PropsOf<K> }]
+    ...args: keyof PropsOf<K> extends never
+      ? [options?: OpenDialogTypeOptions & { props?: PropsOf<K> }]
+      : [options: OpenDialogTypeOptions & { props: PropsOf<K> | ((prev: PropsOf<K> | null) => PropsOf<K>) }]
   ) => DialogInstance;
 
   queue: <K extends DialogType>(
@@ -393,7 +395,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     if (!dialogProps.multiple && existing) {
       existing.updateProps(props);
       existing._onAfterClose = onAfterClose;
-      return existing;
+      return existing as unknown as DialogInstance<K>;
     }
 
     const Component = dialogRegistry[type];
@@ -422,9 +424,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
 
     // 渲染 Dialog
     const element = (() => {
-      // 这里用 any / unknown 是“局部豁免”，不会扩散
       const Comp = Component as React.ComponentType<unknown>;
-
       // 有 props
       if (props != null) {
         return <Comp {...props} />;
@@ -456,8 +456,8 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
         prev.map((d) => {
           if (d.key !== dialogKey) return d;
 
-          const prevProps = d.props;
-          const nextProps = typeof updater === "function" ? updater(prevProps) : { ...prevProps, ...updater };
+          const prevProps = d.props as PropsOf<typeof type>;
+          const nextProps = typeof updater === "function" ? (updater as (p: PropsOf<typeof type>) => void)(prevProps) : Object.assign({}, prevProps, updater);
 
           if (!React.isValidElement(d.content)) return { ...d, props: nextProps };
 
@@ -469,7 +469,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
           return {
             ...d,
             props: nextProps,
-            content: React.cloneElement(parent, {}, React.cloneElement(child, { ...child.props, ...nextProps })),
+            content: React.cloneElement(parent, {}, React.cloneElement(child, Object.assign({}, child.props, nextProps))),
           };
         }),
       );
@@ -481,16 +481,17 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
   }
 
   /** queue 方法 */
-  const queue: DialogContextValue["queue"] = (type, ...args) =>
-    new Promise<void>((resolve) => {
-      const options = args[0] || {};
-      open(type, options);
-      const originalAfterClose = options.onAfterClose;
-      options.onAfterClose = () => {
-        originalAfterClose?.();
-        resolve();
-      };
+  const queue = async (type: DialogType, options?: OpenDialogTypeOptions & { props?: PropsOf<DialogType> }) => {
+    return new Promise<void>((resolve) => {
+      open(type, {
+        ...options,
+        onAfterClose() {
+          options?.onAfterClose?.();
+          resolve();
+        },
+      });
     });
+  };
 
   /** closeTop */
   const closeTop = () => dialogsRef.current.at(-1)?.requestClose();
@@ -513,6 +514,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     dialog?.updateProps(updater);
   };
 
+  // @ts-expect-error
   const dialogValue: DialogContextValue = { open, queue, closeTop, close, updateProps };
   globalDialogInstance = dialogValue;
 
