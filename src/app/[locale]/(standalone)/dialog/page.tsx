@@ -53,7 +53,7 @@ export default function Demo() {
 
   const openQueue = async () => {
     await dialog.queue("X1Dialog", {
-      props: { message: "Hello X1!" },
+      props: { message: "Hello X1!", count: 30 },
       onAfterClose: () => console.log("X1 closed"),
     });
     await dialog.queue("X2Dialog", {

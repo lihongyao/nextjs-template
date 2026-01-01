@@ -4,7 +4,7 @@
 import Button from "@/components/ui/Button";
 import { useDialog } from "@/components/ui/Dialog";
 
-export default function X2Dialog({ closeDialog }: { closeDialog?: () => void }) {
+export default function X2Dialog() {
   const dialog = useDialog();
   return (
     <div className="w-[400px] rounded bg-white p-6 shadow-lg">
@@ -12,8 +12,7 @@ export default function X2Dialog({ closeDialog }: { closeDialog?: () => void }) 
       <p>这是 X3 弹框内容</p>
       <Button
         onClick={() => {
-          closeDialog?.();
-          // dialog.close("X3Dialog");
+          dialog.close("X3Dialog");
         }}
       >
         关闭

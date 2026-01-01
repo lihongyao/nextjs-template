@@ -103,6 +103,8 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
   // refs
   const dialogId = useRef(`DIALOG_${Math.random().toString(36).slice(2).toUpperCase()}`);
   const autoDestroyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // 内部动画结束 promise
+  // 内部动画结束 promise
   const afterCloseResolveRef = useRef<(() => void) | null>(null);
   const afterClosePromiseRef = useRef<Promise<void> | null>(null);
 
@@ -125,8 +127,10 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
   // 用户触发关闭意图（遮罩/closeDialog）
   const requestClose = () => {
     if (isControlled) {
+      // 受控组件：通知调用者“用户希望关闭”，由调用者决定 open=false
       onClose?.();
     } else {
+      // 非受控组件：直接执行退出动画
       setIsExiting(true);
     }
   };
@@ -138,27 +142,33 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
       setVisible(true);
       setIsExiting(false);
     } else if (visible) {
-      setIsExiting(true);
+      setIsExiting(true); // 受控组件 open=false，触发动画
     }
   }, [open, isControlled, visible]);
 
-  // 自动销毁逻辑
+  // 自动销毁逻辑（系统关闭）
   useEffect(() => {
     if (!autoDestroy || !visible) return;
-    autoDestroyTimer.current = setTimeout(() => setIsExiting(true), autoDestroy * 1000);
+
+    autoDestroyTimer.current = setTimeout(() => {
+      setIsExiting(true);
+    }, autoDestroy * 1000);
+
     return () => {
-      if (autoDestroyTimer.current) clearTimeout(autoDestroyTimer.current);
-      autoDestroyTimer.current = null;
+      if (autoDestroyTimer.current) {
+        clearTimeout(autoDestroyTimer.current);
+        autoDestroyTimer.current = null;
+      }
     };
   }, [autoDestroy, visible]);
 
-  // 点击遮罩关闭
+  // 点击遮罩关闭（用户意图）
   const handleMaskClick = () => {
     if (!maskClosable) return;
     requestClose();
   };
 
-  // 动画结束处理
+  // 动画结束处理（唯一 onAfterClose 出口）
   const handleAnimationEnd = (e: React.AnimationEvent) => {
     if (e.target !== e.currentTarget) return;
     if (!isExiting) return;
@@ -170,7 +180,7 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
     unlockBodyScroll();
 
     onAfterClose?.();
-    afterCloseResolveRef.current?.();
+    afterCloseResolveRef.current?.(); // 动画结束时 resolve promise
   };
 
   // 管理全局可见 Dialog 集合，锁滚动
@@ -185,9 +195,10 @@ const DialogComponent = forwardRef<DialogRef, DialogProps>((props, ref) => {
     };
   }, [visible, isExiting]);
 
-  // popstate 关闭
+  // popstate 关闭（系统关闭）
   useEffect(() => {
     if (!closeOnPopstate || _managedByProvider) return;
+
     const handlePopstate = () => setIsExiting(true);
     window.addEventListener("popstate", handlePopstate);
     return () => window.removeEventListener("popstate", handlePopstate);
@@ -249,7 +260,9 @@ Dialog.open = (options: DialogStaticOptions) => {
 
   const dialogRef: { current: DialogRef | null } = { current: null };
 
-  const closeDialog = () => dialogRef.current?.setIsExiting();
+  const closeDialog = () => {
+    dialogRef.current?.setIsExiting();
+  };
 
   root.render(
     <DialogComponent
@@ -260,7 +273,9 @@ Dialog.open = (options: DialogStaticOptions) => {
       maskClassName={options.maskClassName}
       zIndex={options.zIndex ?? dialogZIndex++}
       _managedByProvider
-      _setAfterClosePromise={(p) => p.then(() => resolveFn?.())}
+      _setAfterClosePromise={(p) => {
+        p.then(() => resolveFn?.());
+      }}
       onAfterClose={() => {
         root.unmount();
         container.remove();
@@ -294,51 +309,41 @@ Dialog.close = async (key?: string) => {
 };
 
 // === Provider + useDialog ===
-/** 弹框类型 */
-export type DialogType = keyof typeof dialogRegistry;
-/** 弹框内容组件 Props */
-type PropsOf<K extends DialogType> = ComponentProps<(typeof dialogRegistry)[K]>;
-/** 构造 dialog.open options */
-type OpenDialogOmitProps = "open" | "children" | "onClose" | "_managedByProvider" | "_afterClosePromise" | "_setAfterClosePromise";
-type OpenDialogTypeOptions = Omit<DialogProps, OpenDialogOmitProps>;
 
-/** 弹框实例 */
-export type DialogInstance<K extends DialogType = DialogType> = {
+export type DialogType = keyof typeof dialogRegistry;
+type DialogComponentProps<K extends DialogType> = Partial<React.ComponentProps<(typeof dialogRegistry)[K]>>;
+
+export type OpenDialogOptions<K extends DialogType = DialogType> = Omit<DialogProps, "open" | "children" | "onClose"> & {
+  props?:
+    | Partial<React.ComponentProps<(typeof dialogRegistry)[K]>>
+    | ((prev: Partial<React.ComponentProps<(typeof dialogRegistry)[K]>> | null) => Partial<React.ComponentProps<(typeof dialogRegistry)[K]>>);
+};
+
+type DialogInstance<K extends DialogType = DialogType> = {
   key: string;
   type: K;
   zIndex: number;
   closeOnPopstate: boolean;
-  props: PropsOf<K>;
+  props: DialogComponentProps<K>;
   content: ReactNode;
   requestClose: () => void;
-  updateProps: (updater: PropsOf<K> | ((prev: PropsOf<K> | null) => PropsOf<K>)) => void;
+  updateProps: (updater: DialogComponentProps<K> | ((prev: DialogComponentProps<K> | null) => DialogComponentProps<K>)) => void;
   /** 内部字段：存储最新的 onAfterClose 回调 */
   _onAfterClose?: () => void;
   /** 内部字段：动画结束 promise */
   _afterClosePromise?: Promise<void>;
 };
 
-/** DialogContext */
-export type DialogContextValue = {
-  open: <K extends DialogType>(
-    type: K,
-    ...args: keyof PropsOf<K> extends never ? [options?: OpenDialogTypeOptions & { props?: PropsOf<K> }] : [options: OpenDialogTypeOptions & { props: PropsOf<K> }]
-  ) => DialogInstance;
-
-  queue: <K extends DialogType>(
-    type: K,
-    ...args: keyof PropsOf<K> extends never ? [options?: OpenDialogTypeOptions & { props?: PropsOf<K> }] : [options: OpenDialogTypeOptions & { props: PropsOf<K> }]
-  ) => Promise<void>;
-
-  updateProps: <K extends DialogType>(type: K, updater: PropsOf<K> | ((prev: PropsOf<K> | null) => PropsOf<K>)) => void;
-
+type DialogContextValue = {
+  open: <K extends DialogType>(type: K, options?: OpenDialogOptions<K>) => DialogInstance<K>;
+  queue: <K extends DialogType>(type: K, options?: OpenDialogOptions<K>) => Promise<void>;
+  updateProps: <K extends DialogType>(type: K, updater: DialogComponentProps<K> | ((prev: DialogComponentProps<K> | null) => DialogComponentProps<K>)) => void;
   closeTop: () => void;
   close: (type?: DialogType) => Promise<void>;
 };
 
 const DialogContext = createContext<DialogContextValue | null>(null);
 
-/** Hook 使用 */
 export const useDialog = () => {
   const ctx = useContext(DialogContext);
   if (!ctx) throw new Error("useDialogContext must be used within DialogProvider");
@@ -347,17 +352,16 @@ export const useDialog = () => {
 
 // 全局 dialog 实例
 let globalDialogInstance: DialogContextValue | null = null;
-export const getGlobalDialog = () => {
+export const getGlobalDialog = (): DialogContextValue => {
   if (!globalDialogInstance) {
     throw new Error("DialogProvider 尚未初始化，无法使用全局 dialog");
   }
   return globalDialogInstance;
 };
 
-/** DialogProvider */
 export const DialogProvider = ({ children }: { children: ReactNode }) => {
-  const [dialogs, setDialogs] = useState<DialogInstance[]>([]);
-  const dialogsRef = useRef<DialogInstance[]>([]);
+  const [dialogs, setDialogs] = useState<DialogInstance<DialogType>[]>([]);
+  const dialogsRef = useRef<DialogInstance<DialogType>[]>([]);
   const zIndexBaseRef = useRef(4000);
 
   // popstate（系统关闭）
@@ -371,8 +375,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener("popstate", handlePopstate);
   }, []);
 
-  // 更新 dialogs 数组
-  const updateDialogs = (updater: (prev: DialogInstance<DialogType>[]) => DialogInstance<DialogType>[]) => {
+  const updateDialogs = (updater: (prev: DialogInstance[]) => DialogInstance[]) => {
     setDialogs((prev) => {
       const next = updater(prev);
       dialogsRef.current = next;
@@ -380,31 +383,29 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  /** open 方法 */
-  function open<K extends DialogType>(
-    type: K,
-    ...args: keyof PropsOf<K> extends never ? [options?: OpenDialogTypeOptions & { props?: PropsOf<K> }] : [options: OpenDialogTypeOptions & { props: PropsOf<K> }]
-  ): DialogInstance<K> {
-    const options = args[0] ?? {};
-    const { props, onAfterClose, closeOnPopstate = true, ...dialogProps } = options;
+  const open = <K extends DialogType>(type: K, options: OpenDialogOptions<K> = {}): DialogInstance<K> => {
+    const { props = {}, onAfterClose, closeOnPopstate = true, ...dialogProps } = options;
 
-    // 检查已存在实例
     const existing = dialogsRef.current.find((d) => d.type === type);
     if (!dialogProps.multiple && existing) {
-      existing.updateProps(props);
+      // 如果已存在实例且 multiple=false，直接更新 props
+      existing.updateProps(props ?? {});
+      // 更新 onAfterClose 回调
       existing._onAfterClose = onAfterClose;
-      return existing;
+      return existing as unknown as DialogInstance<K>;
     }
 
     const Component = dialogRegistry[type];
     if (!Component) throw new Error(`Dialog "${type}" is not registered`);
 
     const dialogKey = `DIALOG_${Math.random().toString(36).slice(2).toUpperCase()}`;
+    let requestClose: () => void;
 
-    const instance: DialogInstance<typeof type> & { _onAfterClose?: () => void } = {
+    // 创建实例
+    const instance: DialogInstance<K> & { _onAfterClose?: () => void } = {
       key: dialogKey,
       type,
-      props: props as PropsOf<typeof type>,
+      props: props ?? {},
       zIndex: Math.min(zIndexBaseRef.current++, 9999),
       closeOnPopstate,
       content: null,
@@ -413,25 +414,18 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
       _onAfterClose: onAfterClose,
     };
 
-    // requestClose 实现
-    instance.requestClose = () => {
+    requestClose = () => {
       updateDialogs((prev) =>
-        prev.map((d) => (d.key === dialogKey && React.isValidElement(d.content) ? { ...d, content: React.cloneElement(d.content as ReactElement<{ open?: boolean }>, { open: false }) } : d)),
+        prev.map((d) =>
+          d.key === dialogKey && React.isValidElement(d.content)
+            ? { ...d, content: React.cloneElement(d.content as React.ReactElement<{ open?: boolean; _setAfterClosePromise?: (p: Promise<void>) => void }>, { open: false }) }
+            : d,
+        ),
       );
     };
+    instance.requestClose = requestClose;
 
-    // 渲染 Dialog
-    const element = (() => {
-      // 这里用 any / unknown 是“局部豁免”，不会扩散
-      const Comp = Component as React.ComponentType<unknown>;
-
-      // 有 props
-      if (props != null) {
-        return <Comp {...props} />;
-      }
-      // 无 props
-      return <Comp />;
-    })();
+    // 非受控模式渲染 Dialog
     instance.content = (
       <Dialog
         key={dialogKey}
@@ -443,28 +437,30 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
         }}
         onAfterClose={() => {
           updateDialogs((prev) => prev.filter((d) => d.key !== dialogKey));
+          // ✅ 触发最新的 onAfterClose
           instance._onAfterClose?.();
         }}
       >
-        {element}
+        {/* 子组件调用 closeDialog 可以主动关闭 */}
+        {/* @ts-expect-error */}
+        <Component {...(props ?? {})} closeDialog={() => requestClose()} />
       </Dialog>
     );
-
     // updateProps 方法
     instance.updateProps = (updater) => {
       updateDialogs((prev) =>
         prev.map((d) => {
           if (d.key !== dialogKey) return d;
 
-          const prevProps = d.props;
-          const nextProps = typeof updater === "function" ? updater(prevProps) : { ...prevProps, ...updater };
+          type PropsOf<K extends DialogType> = ComponentProps<(typeof dialogRegistry)[K]>;
+          const prevProps = d.props as PropsOf<K> | null;
+          const nextProps: Partial<PropsOf<K>> = typeof updater === "function" ? updater(prevProps ?? {}) : { ...(prevProps ?? {}), ...updater };
 
-          if (!React.isValidElement(d.content)) return { ...d, props: nextProps };
+          if (!React.isValidElement(d.content)) return d;
 
-          const parent = d.content as ReactElement<{ children: ReactElement }>;
-          const child = parent.props.children;
-
-          if (!React.isValidElement(child)) return { ...d, props: nextProps };
+          const parent = d.content;
+          const child = (parent.props as { children: ReactElement<{ props: object }> }).children;
+          if (!React.isValidElement(child)) return d;
 
           return {
             ...d,
@@ -475,40 +471,37 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
       );
     };
 
-    updateDialogs((prev) => [...prev, instance as DialogInstance<DialogType>]);
+    updateDialogs((prev) => [...prev, instance as unknown as DialogInstance<DialogType>]);
 
     return instance;
-  }
+  };
 
-  /** queue 方法 */
-  const queue: DialogContextValue["queue"] = (type, ...args) =>
+  const queue: DialogContextValue["queue"] = (type, options) =>
     new Promise<void>((resolve) => {
-      const options = args[0] || {};
-      open(type, options);
-      const originalAfterClose = options.onAfterClose;
-      options.onAfterClose = () => {
-        originalAfterClose?.();
-        resolve();
-      };
+      open(type, {
+        ...options,
+        onAfterClose: () => {
+          options?.onAfterClose?.();
+          resolve();
+        },
+      });
     });
 
-  /** closeTop */
   const closeTop = () => dialogsRef.current.at(-1)?.requestClose();
 
-  /** close */
   const close = async (type?: DialogType) => {
     const promises: Promise<void>[] = [];
     dialogsRef.current
       .filter((d) => !type || d.type === type)
       .forEach((d) => {
         d.requestClose();
-        if (d._afterClosePromise) promises.push(d._afterClosePromise);
+        const p = d._afterClosePromise as Promise<void>;
+        if (p) promises.push(p);
       });
     await Promise.all(promises);
   };
 
-  /** updateProps */
-  const updateProps = <K extends DialogType>(type: K, updater: PropsOf<K> | ((prev: PropsOf<K> | null) => PropsOf<K>)) => {
+  const updateProps = <K extends DialogType>(type: K, updater: DialogComponentProps<K> | ((prev: DialogComponentProps<K> | null) => DialogComponentProps<K>)) => {
     const dialog = dialogsRef.current.find((d) => d.type === type) as DialogInstance<K> | undefined;
     dialog?.updateProps(updater);
   };

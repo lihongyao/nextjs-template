@@ -6,17 +6,15 @@ import { useBrandConfig } from "@/providers/brand.provider";
 
 export interface X1DialogProps {
   message?: string;
-  count?: number;
-  closeDialog?: () => void;
+  count: number;
 }
 
-export default function X1Dialog({ message, count, closeDialog }: X1DialogProps) {
+export default function X1Dialog({ message, count }: X1DialogProps) {
   const dialog = useDialog();
   const brand = useBrandConfig();
 
-  const onClose1 = () => closeDialog?.();
-  const onClose2 = () => dialog.closeTop();
-  const onClose3 = () => dialog.close("X1Dialog");
+  const onClose1 = () => dialog.closeTop();
+  const onClose2 = () => dialog.close("X1Dialog");
 
   return (
     <div data-name="X1Dialog" className="rounded bg-white p-4 shadow-lg  w-full h-full">
@@ -30,7 +28,6 @@ export default function X1Dialog({ message, count, closeDialog }: X1DialogProps)
       <div className="flex gap-4 flex-wrap mt-4">
         <Button onClick={onClose1}>关闭m1</Button>
         <Button onClick={onClose2}>关闭m2</Button>
-        <Button onClick={onClose3}>关闭m3</Button>
         <Button
           onClick={() => {
             dialog.open("X2Dialog", {
