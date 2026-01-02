@@ -1,5 +1,9 @@
+"use client";
 // src/components/layout/ModernLayout.tsx
+import { usePathname } from "@/i18n/navigation";
+
 export default function ModernLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   return (
     <div data-name="ModernLayout" className="min-h-dvh">
       <header className="h-[56px] bg-blue-400 flex items-center justify-center">

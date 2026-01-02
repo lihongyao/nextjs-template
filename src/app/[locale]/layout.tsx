@@ -1,12 +1,13 @@
 // src/app/[lang]/layout.tsx
 // import { ViewTransitions } from "next-view-transitions";
 import "./globals.css";
+
 import type { Viewport } from "next";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { ViewTransition } from "react";
 import ClientInitializer from "@/components/features/ClientInitializer";
+import PageTransition from "@/components/features/PageTransition";
 import RouteModalRenderer from "@/components/features/RouteModalRenderer";
 import ScrollManager from "@/components/features/ScrollManager";
 import { DialogProvider } from "@/components/ui/Dialog";
@@ -54,21 +55,19 @@ export default async function LocaleLayout({ children, params }: { children: Rea
         {brand.overrides && <link rel="stylesheet" href={`/styles/overrides/${brand.brandName}.css`} />}
       </head>
       <body>
-        <ViewTransition name="page" enter="page-enter" exit="page-exit">
-          <NextIntlClientProvider locale={locale} messages={messages}>
-            <BrandConfigProvider value={brand}>
-              <DialogProvider>
-                {/* 页面内容 */}
-                {children}
-                <ClientInitializer />
-                {/* 路由弹框 */}
-                <RouteModalRenderer />
-                {/* 滚动管理 */}
-                <ScrollManager defaultScrollToTop />
-              </DialogProvider>
-            </BrandConfigProvider>
-          </NextIntlClientProvider>
-        </ViewTransition>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <BrandConfigProvider value={brand}>
+            <DialogProvider>
+              {/* 页面内容 */}
+              <PageTransition>{children}</PageTransition>
+              <ClientInitializer />
+              {/* 路由弹框 */}
+              <RouteModalRenderer />
+              {/* 滚动管理 */}
+              <ScrollManager defaultScrollToTop />
+            </DialogProvider>
+          </BrandConfigProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

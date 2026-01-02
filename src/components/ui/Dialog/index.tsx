@@ -320,17 +320,9 @@ export type DialogInstance<K extends DialogType = DialogType> = {
 
 /** DialogContext */
 export type DialogContextValue = {
-  open: <K extends DialogType>(
-    type: K,
-    ...args: keyof PropsOf<K> extends never
-      ? [options?: OpenDialogTypeOptions & { props?: PropsOf<K> }]
-      : [options: OpenDialogTypeOptions & { props: PropsOf<K> | ((prev: PropsOf<K> | null) => PropsOf<K>) }]
-  ) => DialogInstance;
+  open: <K extends DialogType>(type: K, options?: OpenDialogTypeOptions & { props?: PropsOf<K> | ((prev: PropsOf<K> | null) => PropsOf<K>) }) => DialogInstance<K>;
 
-  queue: <K extends DialogType>(
-    type: K,
-    ...args: keyof PropsOf<K> extends never ? [options?: OpenDialogTypeOptions & { props?: PropsOf<K> }] : [options: OpenDialogTypeOptions & { props: PropsOf<K> }]
-  ) => Promise<void>;
+  queue: <K extends DialogType>(type: K, options?: OpenDialogTypeOptions & { props?: PropsOf<K> | ((prev: PropsOf<K> | null) => PropsOf<K>) }) => Promise<void>;
 
   updateProps: <K extends DialogType>(type: K, updater: PropsOf<K> | ((prev: PropsOf<K> | null) => PropsOf<K>)) => void;
 
@@ -383,12 +375,11 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
   };
 
   /** open 方法 */
-  function open<K extends DialogType>(
-    type: K,
-    ...args: keyof PropsOf<K> extends never ? [options?: OpenDialogTypeOptions & { props?: PropsOf<K> }] : [options: OpenDialogTypeOptions & { props: PropsOf<K> }]
-  ): DialogInstance<K> {
-    const options = args[0] ?? {};
-    const { props, onAfterClose, closeOnPopstate = true, ...dialogProps } = options;
+  const open = <K extends DialogType>(type: K, options?: OpenDialogTypeOptions & { props?: PropsOf<K> | ((prev: PropsOf<K> | null) => PropsOf<K>) }): DialogInstance<K> => {
+    const { props, onAfterClose, closeOnPopstate = true, ...dialogProps } = options ?? {};
+
+    // 计算初始 props
+    const initialProps = typeof props === "function" ? (props as (prev: PropsOf<K> | null) => PropsOf<K>)(null) : props;
 
     // 检查已存在实例
     const existing = dialogsRef.current.find((d) => d.type === type);
@@ -406,7 +397,7 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     const instance: DialogInstance<typeof type> & { _onAfterClose?: () => void } = {
       key: dialogKey,
       type,
-      props: props as PropsOf<typeof type>,
+      props: initialProps as PropsOf<typeof type>,
       zIndex: Math.min(zIndexBaseRef.current++, 9999),
       closeOnPopstate,
       content: null,
@@ -426,8 +417,8 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     const element = (() => {
       const Comp = Component as React.ComponentType<unknown>;
       // 有 props
-      if (props != null) {
-        return <Comp {...props} />;
+      if (initialProps != null) {
+        return <Comp {...initialProps} />;
       }
       // 无 props
       return <Comp />;
@@ -478,10 +469,10 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     updateDialogs((prev) => [...prev, instance as DialogInstance<DialogType>]);
 
     return instance;
-  }
+  };
 
   /** queue 方法 */
-  const queue = async (type: DialogType, options?: OpenDialogTypeOptions & { props?: PropsOf<DialogType> }) => {
+  const queue = async <K extends DialogType>(type: K, options?: OpenDialogTypeOptions & { props?: PropsOf<K> | ((prev: PropsOf<K> | null) => PropsOf<K>) }) => {
     return new Promise<void>((resolve) => {
       open(type, {
         ...options,
@@ -514,7 +505,6 @@ export const DialogProvider = ({ children }: { children: ReactNode }) => {
     dialog?.updateProps(updater);
   };
 
-  // @ts-expect-error
   const dialogValue: DialogContextValue = { open, queue, closeTop, close, updateProps };
   globalDialogInstance = dialogValue;
 
