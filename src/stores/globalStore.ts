@@ -13,7 +13,7 @@ type GlobalStateProps = {
 export const useGlobalStore = create<GlobalStateProps>()(
   immer((set) => ({
     count: 0,
-    isSidebarOpen: false,
+    isSidebarOpen: true,
     toggleSidebar: () =>
       set((state) => {
         state.isSidebarOpen = !state.isSidebarOpen;

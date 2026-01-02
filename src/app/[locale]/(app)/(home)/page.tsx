@@ -19,7 +19,13 @@ export default function HomePage() {
         <Button onClick={() => router.push(Routes.Motion)}>Motion</Button>
         <Button onClick={() => router.push(Routes.CdnImage)}>CDN图片参数优化</Button>
       </div>
-      <div className="mt-4 w-[300px] h-[2000px] mx-auto bg-pink-400"></div>
+      <div className="flex flex-col justify-center items-center gap-4">
+        {Array.from({ length: 100 }).map((_, i) => (
+          <div key={String(i)} className="w-[300px] h-[200px] rounded-lg flex justify-center items-center  bg-blue-300">
+            <span className="text-xl text-gray-500 italic font-bold"> {i + 1}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
