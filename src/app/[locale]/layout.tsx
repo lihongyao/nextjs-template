@@ -7,7 +7,6 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import ClientInitializer from "@/components/features/ClientInitializer";
-import PageTransition from "@/components/features/PageTransition";
 import RouteModalRenderer from "@/components/features/RouteModalRenderer";
 import ScrollManager from "@/components/features/ScrollManager";
 import { DialogProvider } from "@/components/ui/Dialog";
@@ -59,7 +58,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
           <BrandConfigProvider value={brand}>
             <DialogProvider>
               {/* 页面内容 */}
-              <PageTransition>{children}</PageTransition>
+              {children}
               <ClientInitializer />
               {/* 路由弹框 */}
               <RouteModalRenderer />
