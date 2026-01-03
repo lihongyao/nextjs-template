@@ -8,6 +8,8 @@ export type Theme = "classic" | "modern";
 export type Skin = "dark" | "light";
 // -- 套图
 export type Series = "default";
+// -- 布局
+export type Layout = "classic" | "modern" | "h5";
 
 export type Locale = {
   /** 语言描述 */
@@ -30,6 +32,8 @@ export type BrandConfig = {
   overrides?: boolean;
   /** 套图 */
   series: Series;
+  /** 布局 */
+  layout: Layout;
   /** 支持语言 */
   locales: Locale[];
   /** 默认语言 */

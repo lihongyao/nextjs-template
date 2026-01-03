@@ -6,6 +6,7 @@ export default {
   skin: "dark",
   overrides: true,
   series: "default",
+  layout: "h5",
   defaultLocale: { code: "pt", label: "🇧🇷 Português", value: 11 },
   locales: [
     { code: "zh-CN", label: "🇨🇳 简体中文", value: 1 },

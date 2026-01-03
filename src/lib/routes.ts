@@ -1,5 +1,8 @@
 export const Routes = {
   Home: "/",
+  Cart: "/cart",
+  Order: "/order",
+  Profile: "/profile",
   Login: "/details",
   Details: "/details",
   Dialog: "/dialog",

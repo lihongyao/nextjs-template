@@ -6,7 +6,7 @@
   "scripts": {
     "predev": "cross-env dotenv -e env/.env.${app-afun}.dev -- tsx scripts/gen-brand-css/index.ts",
     "prebuild": "cross-env dotenv -e env/.env.$app.$env -- tsx scripts/gen-brand-css/index.ts",
-    "dev": "cross-env dotenv -e env/.env.${app-afun}.dev -- next dev --turbopack",
+    "dev": "cross-env dotenv -e env/.env.${app-afun}.dev -- next dev --turbopack -H 0.0.0.0",
     "build": "cross-env dotenv -e env/.env.$app.$env -- next build --turbopack",
     "build:test": "app=afun env=dev pnpm build",
     "lint": "biome check",
@@ -56,6 +56,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "babel-plugin-react-compiler": "1.0.0",
+    "baseline-browser-mapping": "^2.9.11",
     "chalk": "^5.6.2",
     "chokidar": "^5.0.0",
     "commitizen": "^4.3.1",

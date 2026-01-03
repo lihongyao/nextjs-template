@@ -8,7 +8,6 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import ClientInitializer from "@/components/features/ClientInitializer";
 import RouteModalRenderer from "@/components/features/RouteModalRenderer";
-import ScrollManager from "@/components/features/ScrollManager";
 import { DialogProvider } from "@/components/ui/Dialog";
 import { routing } from "@/i18n/routing";
 import { getBrandConfigSSR } from "@/lib/brand";
@@ -47,11 +46,6 @@ export default async function LocaleLayout({ children, params }: { children: Rea
     <html lang={locale} data-theme={brand.theme} data-skin={brand.skin} suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,minimum-scale=1,maximum-scale=1,user-scalable=no" />
-        {/* SSR 加载主题、皮肤、覆盖文件 */}
-        <link rel="stylesheet" href={`/styles/tokens/index.css`} />
-        <link rel="stylesheet" href={`/styles/themes/${brand.theme}.css`} />
-        <link rel="stylesheet" href={`/styles/skins/${brand.skin}.css`} />
-        {brand.overrides && <link rel="stylesheet" href={`/styles/overrides/${brand.brandName}.css`} />}
       </head>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
@@ -63,7 +57,7 @@ export default async function LocaleLayout({ children, params }: { children: Rea
               {/* 路由弹框 */}
               <RouteModalRenderer />
               {/* 滚动管理 */}
-              <ScrollManager defaultScrollToTop />
+              {/* <ScrollManager defaultScrollToTop /> */}
             </DialogProvider>
           </BrandConfigProvider>
         </NextIntlClientProvider>
