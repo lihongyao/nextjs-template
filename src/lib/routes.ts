@@ -18,4 +18,4 @@ export const Routes = {
   CdnImage: "/cdn-image",
 } as const;
 
-export type Route = keyof typeof Routes;
+export type Route = (typeof Routes)[keyof typeof Routes];

@@ -10,7 +10,10 @@ export default function HomePage() {
   }, []);
   return (
     <div data-name="HomePage">
-      <div className="w-[300px] h-[200px] mx-auto mt-4 rounded-lg flex justify-center items-center  bg-blue-300">
+      <header className="text-center py-10">
+        <span className="text-xl text-gray-500 italic font-bold">HomePage</span>
+      </header>
+      <div className="w-[300px] h-[200px] mx-auto rounded-lg flex justify-center items-center  bg-blue-300">
         <span className="text-xl text-gray-500 italic font-bold"></span>
       </div>
       <div className="p-4 flex gap-2 flex-wrap">
@@ -25,7 +28,7 @@ export default function HomePage() {
       <div className="flex flex-col justify-center items-center gap-4">
         {Array.from({ length: 10 }).map((_, i) => (
           <div key={String(i)} className="w-[300px] h-[200px] rounded-lg flex justify-center items-center  bg-blue-300">
-            <span className="text-xl text-gray-500 italic font-bold">{i + 1}</span>
+            <span className="text-xl text-white italic font-bold">{i + 1}</span>
           </div>
         ))}
       </div>
